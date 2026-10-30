@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Master IMI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            color: #ffffff;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .login-page-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 980px;
+        }
+
+        .login-content-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            gap: 40px;
+        }
+
+        .login-left-side {
+            flex: 1.2;
+            padding-right: 20px;
+            text-align: left;
+        }
+
+        .login-left-side h1 {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .login-left-side p {
+            font-size: 20px;
+            line-height: 28px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .login-right-side {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            padding: 30px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .login-card input, .login-card select {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .login-card select option {
+            background: #23a6d5;
+            color: #ffffff;
+        }
+
+        .btn-main {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #ffffff;
+            color: #e73c7e;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .btn-main:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+        }
+
+        .btn-alt {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .fb-divider {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            margin: 15px 0;
+        }
+
+        .error {
+            background: rgba(255, 0, 0, 0.25);
+            color: #fff;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 0, 0, 0.3);
+        }
+
+        .switch-link {
+            display: block;
+            margin-top: 15px;
+            color: #ffffff;
+            font-size: 14px;
+            text-decoration: none;
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        .switch-link:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+
+        .dashboard-wrapper {
+            width: 100%;
+            max-width: 1350px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            padding: 20px 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .selectors-bar {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            padding: 15px 25px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .selectors-bar select {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            font-weight: bold;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .selectors-bar option {
+            background: #23a6d5;
+            color: #ffffff;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 2fr;
+            gap: 20px;
+        }
+
+        /* --- ADAPTATION MOBILE & TABLETTE --- */
+        @media (max-width: 1100px) {
+            .login-content-wrapper { flex-direction: column; text-align: center; }
+            .login-left-side { padding-right: 0; margin-bottom: 30px; }
+            .container { grid-template-columns: 1fr; }
+            body { align-items: flex-start; }
+            
+            /* L'en-tête passe en colonne sur mobile pour éviter le chevauchement */
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+                padding: 15px;
+            }
+            .header h2 {
+                font-size: 20px;
+            }
+            .selectors-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .selectors-bar select {
+                width: 100% !important;
+            }
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+            text-align: left;
+        }
+
+        .card h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            font-size: 13px;
+            vertical-align: middle;
+        }
+
+        th { background: rgba(255, 255, 255, 0.1); }
+
+        .note-badge {
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 3px 7px;
+            border-radius: 6px;
+            margin: 2px;
+            font-size: 11px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-delete {
+            background: rgba(255, 0, 0, 0.5);
+            color: #ffffff;
+            padding: 1px 4px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 10px;
+            font-weight: bold;
+            margin-left: 4px;
+            border: 1px solid rgba(255, 0, 0, 0.7);
+        }
+
+        .btn-delete:hover {
+            background: rgba(255, 0, 0, 0.8);
+        }
+
+        .btn-action-small {
+            background: rgba(255, 255, 255, 0.25);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn-action-small:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .btn-export {
+            background: #23a6d5;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+            display: inline-block;
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+        .btn-export:hover {
+            background: #1e8bb0;
+        }
+    </style>
+    <script>
+        function updateView() {
+            const classe = document.getElementById('select-classe').value;
+            const matiere = document.getElementById('select-matiere').value;
+            location.href = `/?classe=${encodeURIComponent(classe)}&matiere=${encodeURIComponent(matiere)}`;
+        }
+
+        function toggleEdit(id) {
+            const spanNom = document.getElementById('nom-eleve-' + id);
+            const formEdit = document.getElementById('form-edit-' + id);
+            if (formEdit.style.display === 'none') {
+                formEdit.style.display = 'block';
+                spanNom.style.display = 'none';
+            } else {
+                formEdit.style.display = 'none';
+                spanNom.style.display = 'inline';
+            }
+        }
+    </script>
+</head>
+<body>
+
+    {% if view == 'dashboard' %}
+        <!-- ================= TABLEAU DE BORD PROFESSEUR ================= -->
+        <div class="dashboard-wrapper" style="align-self: flex-start;">
+            <div class="header">
+                <h2>Class Master IMI - Prof. {{ prof_nom }}</h2>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <a href="/export_csv" class="btn-export">📥 Exporter (CSV)</a>
+                    <a href="/logout" class="logout-btn">Déconnexion</a>
+                </div>
+            </div>
+
+            <!-- Barre de sélection Classe & Matière -->
+            <div class="selectors-bar">
+                <div>
+                    <label style="font-weight: bold; margin-right: 5px;">🏫 Classe :</label>
+                    <select id="select-classe" onchange="updateView()">
+                        {% for c in classes %}
+                            <option value="{{ c }}" {% if c == classe_active %}selected{% endif %}>{{ c }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div style="flex-grow: 1;">
+                    <label style="font-weight: bold; margin-right: 5px;">📚 Matière :</label>
+                    <select id="select-matiere" onchange="updateView()" style="width: 70%;">
+                        {% for m in matieres %}
+                            <option value="{{ m }}" {% if m == matiere_active %}selected{% endif %}>{{ m }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="container">
+                <!-- 1. GÉRER LA CLASSE (AJOUTER, MODIFIER, SUPPRIMER) -->
+                <div class="card">
+                    <h3>Gérer les élèves</h3>
+                    <form method="POST">
+                        <input type="hidden" name="action_prof" value="add_eleve">
+                        <input type="hidden" name="classe_cible" value="{{ classe_active }}">
+                        <div style="margin-bottom: 15px;">
+                            <label style="font-size: 13px; display: block; margin-bottom: 5px;">Ajouter dans {{ classe_active }}</label>
+                            <input type="text" name="nouveau_nom" placeholder="Prénom et Nom" required autocomplete="off" style="width: 100%; padding: 10px; border-radius: 8px; border: none; background: rgba(255, 255, 255, 0.2); color: #fff; outline: none;">
+                        </div>
+                        <button type="submit" class="btn-main" style="background: #23a6d5; color: #fff;">Inscrire l'élève</button>
+                    </form>
+
+                    <div style="margin-top: 20px;">
+                        <p style="font-size: 13px; font-weight: bold; margin-bottom: 8px;">Liste de la classe ({{ liste_eleves|length }}) :</p>
+                        <ul style="max-height: 160px; overflow-y: auto; padding-left: 15px; font-size: 13px;">
+                            {% for e in liste_eleves %}
+                                <li style="margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; padding-right: 10px;">
+                                    <div>
+                                        <span id="nom-eleve-{{ e.id }}">{{ e.nom }}</span>
+                                        <!-- Formulaire caché pour modifier le nom -->
+                                        <form method="POST" id="form-edit-{{ e.id }}" style="display: none; margin-top: 4px;">
+                                            <input type="hidden" name="action_prof" value="edit_eleve">
+                                            <input type="hidden" name="eleve_id" value="{{ e.id }}">
+                                            <input type="text" name="nouveau_nom" value="{{ e.nom }}" required style="padding: 3px 6px; font-size: 12px; border-radius: 4px; border: none; background: rgba(255,255,255,0.3); color: #fff; width: 110px;">
+                                            <button type="submit" class="btn-action-small" style="background: #23d5ab; font-weight: bold;">✔</button>
+                                        </form>
+                                    </div>
+                                    <div style="display: flex; gap: 4px;">
+                                        <button type="button" class="btn-action-small" onclick="toggleEdit('{{ e.id }}')">✏️</button>
+                                        <a href="/delete_eleve/{{ e.id }}" class="btn-delete" title="Retirer l'élève" onclick="return confirm('Voulez-vous vraiment supprimer cet élève ?');">×</a>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 2. PUBLIER UNE NOTE -->
+                <div class="card">
+                    <h3>Publier une note</h3>
+                    <form method="POST">
+                        <input type="hidden" name="action_prof" value="add_note">
+                        <input type="hidden" name="classe" value="{{ classe_active }}">
+                        <input type="hidden" name="matiere" value="{{ matiere_active }}">
+
+                        <div style="margin-bottom: 15px;">
+                            <label style="font-size: 13px; display: block; margin-bottom: 5px;">Élève</label>
+                            <select name="eleve" required style="width: 100%; padding: 10px; border-radius: 8px; border: none; background: rgba(255, 255, 255, 0.2); color: #fff; outline: none;">
+                                <option value="" disabled selected>Choisir un élève...</option>
+                                {% for e in liste_eleves %}
+                                    <option value="{{ e.nom }}">{{ e.nom }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="font-size: 13px; display: block; margin-bottom: 5px;">Évaluation</label>
+                            <select name="type_eval" required style="width: 100%; padding: 10px; border-radius: 8px; border: none; background: rgba(255, 255, 255, 0.2); color: #fff; outline: none;">
+                                <option value="" disabled selected>Type...</option>
+                                <option value="Interrogation 1">Interrogation 1</option>
+                                <option value="Interrogation 2">Interrogation 2</option>
+                                <option value="Interrogation 3">Interrogation 3</option>
+                                <option value="Devoir 1">Devoir 1</option>
+                                <option value="Devoir 2">Devoir 2</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="font-size: 13px; display: block; margin-bottom: 5px;">Note (/20)</label>
+                            <input type="number" step="0.25" min="0" max="20" name="note" placeholder="16.5" required style="width: 100%; padding: 10px; border-radius: 8px; border: none; background: rgba(255, 255, 255, 0.2); color: #fff; outline: none;">
+                        </div>
+                        <button type="submit" class="btn-main">Enregistrer</button>
+                    </form>
+                </div>
+
+                <!-- 3. TABLEAU DES MOYENNES INDIVIDUELLES PAR ÉLÈVE -->
+                <div class="card">
+                    <h3>Bilan & Moyennes ({{ matiere_active }})</h3>
+                    <div style="max-height: 380px; overflow-y: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 45%;">Élève & Notes</th>
+                                    <th>M.Int</th>
+                                    <th>M.Dev</th>
+                                    <th>M.Gén</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for b in bilan_eleves %}
+                                <tr>
+                                    <td>
+                                        <strong style="font-size: 14px; display: block; margin-bottom: 4px;">{{ b.nom }}</strong>
+                                        <div>
+                                            {% if b.notes %}
+                                                {% for n in b.notes %}
+                                                    <span class="note-badge">{{ n.type_eval }}: <strong>{{ n.note }}</strong> <a href="/delete/{{ n.id }}" class="btn-delete" title="Supprimer">×</a></span>
+                                                {% endfor %}
+                                            {% else %}
+                                                <span style="font-size: 11px; opacity: 0.6;">Aucune note</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td style="text-align: center;">{{ b.moy_interro }}</td>
+                                    <td style="text-align: center;">{{ b.moy_devoir }}</td>
+                                    <td style="text-align: center;"><strong style="color: #ffeaa7; font-size: 15px;">{{ b.moy_gen }}</strong></td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" style="text-align: center; opacity: 0.7;">Aucun élève dans cette classe.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% elif view == 'register' %}
+        <!-- ================= PAGE D'INSCRIPTION ================= -->
+        <div class="login-page-container">
+            <div class="login-content-wrapper">
+                <div class="login-left-side">
+                    <h1>Class Master IMI</h1>
+                    <p>Créez votre compte enseignant pour gérer vos classes et suivre les notes de vos élèves en toute simplicité.</p>
+                </div>
+                <div class="login-right-side">
+                    <div class="login-card">
+                        <h2 style="margin-bottom: 15px; font-size: 20px;">Créer un compte</h2>
+                        {% if message %}
+                            <div class="error">{{ message }}</div>
+                        {% endif %}
+                        <form method="POST">
+                            <input type="hidden" name="action" value="register">
+                            <input type="text" name="nom" placeholder="Nom complet" required autocomplete="off">
+                            <input type="email" name="email" placeholder="Adresse e-mail" required autocomplete="off">
+                            <input type="password" name="password" placeholder="Nouveau mot de passe" required>
+                            <button type="submit" class="btn-alt">S'inscrire</button>
+                        </form>
+                        <div class="fb-divider"></div>
+                        <a href="/?view=login" class="switch-link">Déjà un compte ? Se connecter</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% elif view == 'parent_space' %}
+        <!-- ================= ESPACE PARENTS / ELEVES ================= -->
+        <div class="login-page-container">
+            <div class="login-content-wrapper">
+                <div class="login-left-side">
+                    <h1>Espace Consultation</h1>
+                    <p>Consultez les notes de vos interrogations et devoirs par classe et par matière.</p>
+                </div>
+                <div class="login-right-side">
+                    <div class="login-card" style="max-width: 440px;">
+                        <h2 style="margin-bottom: 15px; font-size: 20px;">Rechercher des notes</h2>
+                        <form method="POST">
+                            <input type="hidden" name="action" value="search_notes">
+                            <select name="classe" required>
+                                <option value="" disabled selected>Choisir la classe...</option>
+                                {% for c in classes %}
+                                    <option value="{{ c }}" {% if classe_cherche == c %}selected{% endif %}>{{ c }}</option>
+                                {% endfor %}
+                            </select>
+                            <select name="nom_eleve" required>
+                                <option value="" disabled selected>Choisir votre nom...</option>
+                                {% for e in tous_eleves %}
+                                    <option value="{{ e.nom }}" {% if nom_cherche == e.nom %}selected{% endif %}>{{ e.nom }} ({{ e.classe }})</option>
+                                {% endfor %}
+                            </select>
+                            <select name="matiere" required>
+                                <option value="" disabled selected>Choisir une matière...</option>
+                                {% for m in matieres %}
+                                    <option value="{{ m }}" {% if matiere_cherche == m %}selected{% endif %}>{{ m }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn-main" style="margin-top: 5px;">Consulter mes notes</button>
+                        </form>
+
+                        {% if recherche_effectuee %}
+                            <div style="margin-top: 15px; text-align: left; max-height: 180px; overflow-y: auto;">
+                                <p style="font-size: 13px; margin-bottom: 8px; font-weight: bold;">Notes de {{ nom_cherche }} ({{ matiere_cherche }}) :</p>
+                                {% if resultats %}
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Évaluation</th>
+                                                <th>Note</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for r in resultats %}
+                                            <tr>
+                                                <td>{{ r.type_eval }}</td>
+                                                <td><strong>{{ r.note }}</strong> / 20</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% else %}
+                                    <p style="font-size: 13px; opacity: 0.8; text-align: center; margin-top: 10px;">Aucune note trouvée.</p>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
+                        <div class="fb-divider"></div>
+                        <a href="/?view=login" class="switch-link">Retour à la connexion Enseignant</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <!-- ================= PAGE DE CONNEXION ================= -->
+        <div class="login-page-container">
+            <div class="login-content-wrapper">
+                <div class="login-left-side">
+                    <h1>Class Master IMI</h1>
+                    <p>Gérez facilement les notes et les performances académiques de la Terminale IMI 1 et IMI 2.</p>
+                </div>
+                <div class="login-right-side">
+                    <div class="login-card">
+                        <h2 style="margin-bottom: 20px; font-size: 22px;">Espace Enseignant</h2>
+                        {% if message %}
+                            <div class="error">{{ message }}</div>
+                        {% endif %}
+                        <form method="POST">
+                            <input type="hidden" name="action" value="login">
+                            <input type="email" name="email" placeholder="Adresse e-mail" required autocomplete="off">
+                            <input type="password" name="password" placeholder="Mot de passe" required>
+                            <button type="submit" class="btn-main">Se connecter</button>
+                        </form>
+                        <div class="fb-divider"></div>
+                        <a href="/?view=register" class="btn-alt">Créer un nouveau compte</a>
+                        <div style="margin-top: 10px;">
+                            <a href="/?view=parent_space" class="switch-link" style="color: #ffeaa7;">👨‍👩‍👧 Espace Parents & Élèves</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+</body>
+</html>
