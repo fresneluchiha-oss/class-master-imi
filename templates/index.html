@@ -261,23 +261,55 @@
             gap: 20px;
         }
 
-        @media (max-width: 1100px) {
-            .login-content-wrapper { flex-direction: column; text-align: center; }
-            .login-left-side { padding-right: 0; margin-bottom: 30px; }
-            .container { grid-template-columns: 1fr; }
-            body { align-items: flex-start; }
+        /* --- ADAPTATION MOBILE & TABLETTE OPTIMISÉE --- */
+        @media (max-width: 900px) {
+            body { 
+                align-items: flex-start; 
+                padding: 10px;
+            }
+            .login-content-wrapper { 
+                flex-direction: column; 
+                text-align: center; 
+            }
+            .login-left-side { 
+                padding-right: 0; 
+                margin-bottom: 20px; 
+            }
+            .container { 
+                grid-template-columns: 1fr; 
+            }
             
             .header {
                 flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
+                align-items: stretch;
+                gap: 12px;
                 padding: 15px;
             }
+            .header h2 {
+                font-size: 18px;
+                text-align: center;
+            }
+            /* Boutons du header bien alignés en grille mobile */
+            .header > div {
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 6px;
+                width: 100%;
+            }
+            .header a {
+                text-align: center;
+                padding: 8px 4px !important;
+                font-size: 11px !important;
+                white-space: nowrap;
+            }
+
             .selectors-bar {
                 flex-direction: column;
                 align-items: stretch;
+                gap: 10px;
+                padding: 12px;
             }
-            .selectors-bar select {
+            .selectors-bar select, .selectors-bar div {
                 width: 100% !important;
             }
         }
@@ -400,7 +432,7 @@
             <div class="header">
                 <h2>Class Master IMI - Prof. {{ prof_nom }}</h2>
                 <div style="display: flex; gap: 10px; align-items: center;">
-                    <a href="/export_csv" class="btn-export">📥 Exporter (CSV)</a>
+                    <a href="/export_csv" class="btn-export">📥 Exporter</a>
                     <a href="/?view=settings" class="settings-btn">⚙️ Paramètres</a>
                     <a href="/logout" class="logout-btn">Déconnexion</a>
                 </div>
@@ -624,7 +656,7 @@
                 </form>
 
                 <!-- Zone de Danger : Suppression de Compte -->
-                <form method="POST" action="/?view=settings" style="margin-top: 25px; border-top: 1px solid rgba(255,0,0,0.3); padding-top: 15px;" onsubmit="return confirm('⚠️ Attention : Voulez-vous vraiment supprimer définitivement votre compte enseignant ? Cette action est irrreversible.');">
+                <form method="POST" action="/?view=settings" style="margin-top: 25px; border-top: 1px solid rgba(255,0,0,0.3); padding-top: 15px;" onsubmit="return confirm('⚠️ Attention : Voulez-vous vraiment supprimer définitivement votre compte enseignant ? Cette action est irréversible.');">
                     <input type="hidden" name="action_prof" value="delete_account">
                     <h4 style="margin-bottom: 8px; font-size: 15px; color: #ff7675;">🗑️ Zone de danger</h4>
                     <p style="font-size: 12px; opacity: 0.8; margin-bottom: 12px;">La suppression de votre compte effacera vos identifiants d'accès. Les élèves et les notes restent conservés en base.</p>
