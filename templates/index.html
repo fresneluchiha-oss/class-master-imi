@@ -153,6 +153,16 @@
             border: 1px solid rgba(255, 0, 0, 0.3);
         }
 
+        .success {
+            background: rgba(35, 213, 171, 0.25);
+            color: #fff;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(35, 213, 171, 0.4);
+        }
+
         .switch-link {
             display: block;
             margin-top: 15px;
@@ -201,6 +211,21 @@
             background: rgba(255, 255, 255, 0.4);
         }
 
+        .settings-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .settings-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
         .selectors-bar {
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(12px);
@@ -232,26 +257,21 @@
 
         .container {
             display: grid;
-            grid-template-columns: 1fr 1fr 2fr;
+            grid-template-columns: 1.1fr 1fr 1.9fr;
             gap: 20px;
         }
 
-        /* --- ADAPTATION MOBILE & TABLETTE --- */
         @media (max-width: 1100px) {
             .login-content-wrapper { flex-direction: column; text-align: center; }
             .login-left-side { padding-right: 0; margin-bottom: 30px; }
             .container { grid-template-columns: 1fr; }
             body { align-items: flex-start; }
             
-            /* L'en-tête passe en colonne sur mobile pour éviter le chevauchement */
             .header {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 15px;
                 padding: 15px;
-            }
-            .header h2 {
-                font-size: 20px;
             }
             .selectors-bar {
                 flex-direction: column;
@@ -355,7 +375,8 @@
         function updateView() {
             const classe = document.getElementById('select-classe').value;
             const matiere = document.getElementById('select-matiere').value;
-            location.href = `/?classe=${encodeURIComponent(classe)}&matiere=${encodeURIComponent(matiere)}`;
+            const semestre = document.getElementById('select-semestre').value;
+            location.href = `/?classe=${encodeURIComponent(classe)}&matiere=${encodeURIComponent(matiere)}&semestre=${encodeURIComponent(semestre)}`;
         }
 
         function toggleEdit(id) {
@@ -373,18 +394,19 @@
 </head>
 <body>
 
-    {% if view == 'dashboard' %}
+    {% if session.get('prof_id') and view == 'dashboard' %}
         <!-- ================= TABLEAU DE BORD PROFESSEUR ================= -->
         <div class="dashboard-wrapper" style="align-self: flex-start;">
             <div class="header">
                 <h2>Class Master IMI - Prof. {{ prof_nom }}</h2>
                 <div style="display: flex; gap: 10px; align-items: center;">
                     <a href="/export_csv" class="btn-export">📥 Exporter (CSV)</a>
+                    <a href="/?view=settings" class="settings-btn">⚙️ Paramètres</a>
                     <a href="/logout" class="logout-btn">Déconnexion</a>
                 </div>
             </div>
 
-            <!-- Barre de sélection Classe & Matière -->
+            <!-- Barre de sélection Classe, Semestre & Matière -->
             <div class="selectors-bar">
                 <div>
                     <label style="font-weight: bold; margin-right: 5px;">🏫 Classe :</label>
@@ -394,9 +416,17 @@
                         {% endfor %}
                     </select>
                 </div>
+                <div>
+                    <label style="font-weight: bold; margin-right: 5px;">📅 Semestre :</label>
+                    <select id="select-semestre" onchange="updateView()">
+                        {% for s in semestres %}
+                            <option value="{{ s }}" {% if s == semestre_actif %}selected{% endif %}>{{ s }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
                 <div style="flex-grow: 1;">
                     <label style="font-weight: bold; margin-right: 5px;">📚 Matière :</label>
-                    <select id="select-matiere" onchange="updateView()" style="width: 70%;">
+                    <select id="select-matiere" onchange="updateView()" style="width: 60%;">
                         {% for m in matieres %}
                             <option value="{{ m }}" {% if m == matiere_active %}selected{% endif %}>{{ m }}</option>
                         {% endfor %}
@@ -405,32 +435,44 @@
             </div>
 
             <div class="container">
-                <!-- 1. GÉRER LA CLASSE (AJOUTER, MODIFIER, SUPPRIMER) -->
+                <!-- 1. GÉRER LA CLASSE & INSCRIPTION -->
                 <div class="card">
                     <h3>Gérer les élèves</h3>
                     <form method="POST">
                         <input type="hidden" name="action_prof" value="add_eleve">
                         <input type="hidden" name="classe_cible" value="{{ classe_active }}">
-                        <div style="margin-bottom: 15px;">
-                            <label style="font-size: 13px; display: block; margin-bottom: 5px;">Ajouter dans {{ classe_active }}</label>
+                        <div style="margin-bottom: 10px;">
+                            <label style="font-size: 13px; display: block; margin-bottom: 4px;">Inscrire dans {{ classe_active }}</label>
                             <input type="text" name="nouveau_nom" placeholder="Prénom et Nom" required autocomplete="off" style="width: 100%; padding: 10px; border-radius: 8px; border: none; background: rgba(255, 255, 255, 0.2); color: #fff; outline: none;">
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <label style="font-size: 12px; display: block; margin-bottom: 4px; opacity: 0.9;">Code secret (laisser vide pour auto)</label>
+                            <input type="text" name="code_secret_saisi" placeholder="Ex: A482" autocomplete="off" style="width: 100%; padding: 8px 10px; border-radius: 8px; border: none; background: rgba(255, 255, 255, 0.2); color: #fff; outline: none; text-transform: uppercase; font-size: 13px;">
                         </div>
                         <button type="submit" class="btn-main" style="background: #23a6d5; color: #fff;">Inscrire l'élève</button>
                     </form>
 
-                    <div style="margin-top: 20px;">
+                    <div style="margin-top: 15px;">
                         <p style="font-size: 13px; font-weight: bold; margin-bottom: 8px;">Liste de la classe ({{ liste_eleves|length }}) :</p>
-                        <ul style="max-height: 160px; overflow-y: auto; padding-left: 15px; font-size: 13px;">
+                        <ul style="max-height: 180px; overflow-y: auto; padding-left: 5px; font-size: 13px; list-style: none;">
                             {% for e in liste_eleves %}
-                                <li style="margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; padding-right: 10px;">
+                                <li style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; padding: 6px; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.1); border-radius: 6px;">
                                     <div>
-                                        <span id="nom-eleve-{{ e.id }}">{{ e.nom }}</span>
-                                        <!-- Formulaire caché pour modifier le nom -->
+                                        <span id="nom-eleve-{{ e.id }}" style="font-weight: 600;">
+                                            {{ e.nom }} 
+                                            <span style="background: rgba(0, 0, 0, 0.35); padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 6px; color: #ffeaa7; border: 1px solid rgba(255, 234, 167, 0.4);" title="Code secret parent">
+                                                🔑 <strong>{{ e.code_secret }}</strong>
+                                            </span>
+                                        </span>
+
                                         <form method="POST" id="form-edit-{{ e.id }}" style="display: none; margin-top: 4px;">
                                             <input type="hidden" name="action_prof" value="edit_eleve">
                                             <input type="hidden" name="eleve_id" value="{{ e.id }}">
-                                            <input type="text" name="nouveau_nom" value="{{ e.nom }}" required style="padding: 3px 6px; font-size: 12px; border-radius: 4px; border: none; background: rgba(255,255,255,0.3); color: #fff; width: 110px;">
-                                            <button type="submit" class="btn-action-small" style="background: #23d5ab; font-weight: bold;">✔</button>
+                                            <div style="display: flex; gap: 5px; align-items: center; flex-wrap: wrap;">
+                                                <input type="text" name="nouveau_nom" value="{{ e.nom }}" required title="Modifier le nom" style="padding: 4px 6px; font-size: 12px; border-radius: 4px; border: none; background: rgba(255,255,255,0.3); color: #fff; width: 110px;">
+                                                <input type="text" name="nouveau_code" value="{{ e.code_secret }}" placeholder="Code" title="Modifier le code secret" style="padding: 4px 6px; font-size: 12px; border-radius: 4px; border: none; background: rgba(255,255,255,0.3); color: #fff; width: 70px; text-transform: uppercase;">
+                                                <button type="submit" class="btn-action-small" style="background: #23d5ab; font-weight: bold; padding: 4px 8px;">✔</button>
+                                            </div>
                                         </form>
                                     </div>
                                     <div style="display: flex; gap: 4px;">
@@ -441,15 +483,33 @@
                             {% endfor %}
                         </ul>
                     </div>
+
+                    <!-- Journal des Notifications -->
+                    <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 15px;">
+                        <p style="font-size: 13px; font-weight: bold; margin-bottom: 8px;">🔔 Notifications Récentes :</p>
+                        <div style="max-height: 120px; overflow-y: auto;">
+                            <ul style="list-style: none; font-size: 12px;">
+                                {% for notif in notifications %}
+                                    <li style="background: rgba(0,0,0,0.2); padding: 6px 8px; border-radius: 6px; margin-bottom: 5px; border-left: 3px solid #23d5ab;">
+                                        {{ notif.message }}
+                                        <div style="font-size: 9px; opacity: 0.6; margin-top: 1px;">{{ notif.date_creation }}</div>
+                                    </li>
+                                {% else %}
+                                    <li style="opacity: 0.7; font-size: 11px;">Aucune notification.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 2. PUBLIER UNE NOTE -->
                 <div class="card">
-                    <h3>Publier une note</h3>
+                    <h3>Publier une note ({{ semestre_actif }})</h3>
                     <form method="POST">
                         <input type="hidden" name="action_prof" value="add_note">
                         <input type="hidden" name="classe" value="{{ classe_active }}">
                         <input type="hidden" name="matiere" value="{{ matiere_active }}">
+                        <input type="hidden" name="semestre" value="{{ semestre_actif }}">
 
                         <div style="margin-bottom: 15px;">
                             <label style="font-size: 13px; display: block; margin-bottom: 5px;">Élève</label>
@@ -479,9 +539,9 @@
                     </form>
                 </div>
 
-                <!-- 3. TABLEAU DES MOYENNES INDIVIDUELLES PAR ÉLÈVE -->
+                <!-- 3. TABLEAU DES MOYENNES -->
                 <div class="card">
-                    <h3>Bilan & Moyennes ({{ matiere_active }})</h3>
+                    <h3>Bilan ({{ matiere_active }} - {{ semestre_actif }})</h3>
                     <div style="max-height: 380px; overflow-y: auto;">
                         <table>
                             <thead>
@@ -523,13 +583,63 @@
             </div>
         </div>
 
+    {% elif session.get('prof_id') and view == 'settings' %}
+        <!-- ================= PAGE PARAMÈTRES ================= -->
+        <div class="login-page-container">
+            <div class="login-card" style="max-width: 500px; text-align: left;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>⚙️ Paramètres du compte</h2>
+                    <a href="/" style="color: #fff; text-decoration: none; font-size: 14px;">⬅️ Retour</a>
+                </div>
+
+                {% if message %}
+                    <div class="error">{{ message }}</div>
+                {% endif %}
+                {% if success_message %}
+                    <div class="success">{{ success_message }}</div>
+                {% endif %}
+
+                <form method="POST" action="/?view=settings">
+                    <input type="hidden" name="action_prof" value="update_profile">
+                    <h4 style="margin-bottom: 10px; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 5px;">Informations personnelles</h4>
+                    <label style="font-size: 13px;">Nom complet</label>
+                    <input type="text" name="nom" value="{{ prof_info.nom }}" required style="width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border-radius: 8px; border: none; background: rgba(255,255,255,0.2); color: #fff;">
+                    
+                    <label style="font-size: 13px;">Adresse e-mail</label>
+                    <input type="email" name="email" value="{{ prof_info.email }}" required style="width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border-radius: 8px; border: none; background: rgba(255,255,255,0.2); color: #fff;">
+                    
+                    <button type="submit" class="btn-main" style="background: #23a6d5; color: #fff;">Enregistrer les modifications</button>
+                </form>
+
+                <form method="POST" action="/?view=settings" style="margin-top: 25px;">
+                    <input type="hidden" name="action_prof" value="update_password">
+                    <h4 style="margin-bottom: 10px; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 5px;">Sécurité / Mot de passe</h4>
+                    <label style="font-size: 13px;">Ancien mot de passe</label>
+                    <input type="password" name="ancien_password" required style="width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border-radius: 8px; border: none; background: rgba(255,255,255,0.2); color: #fff;">
+                    
+                    <label style="font-size: 13px;">Nouveau mot de passe</label>
+                    <input type="password" name="nouveau_password" required style="width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border-radius: 8px; border: none; background: rgba(255,255,255,0.2); color: #fff;">
+                    
+                    <button type="submit" class="btn-main" style="background: #e73c7e; color: #fff;">Changer le mot de passe</button>
+                </form>
+
+                <!-- Zone de Danger : Suppression de Compte -->
+                <form method="POST" action="/?view=settings" style="margin-top: 25px; border-top: 1px solid rgba(255,0,0,0.3); padding-top: 15px;" onsubmit="return confirm('⚠️ Attention : Voulez-vous vraiment supprimer définitivement votre compte enseignant ? Cette action est irrreversible.');">
+                    <input type="hidden" name="action_prof" value="delete_account">
+                    <h4 style="margin-bottom: 8px; font-size: 15px; color: #ff7675;">🗑️ Zone de danger</h4>
+                    <p style="font-size: 12px; opacity: 0.8; margin-bottom: 12px;">La suppression de votre compte effacera vos identifiants d'accès. Les élèves et les notes restent conservés en base.</p>
+                    <button type="submit" class="btn-main" style="background: rgba(255, 0, 0, 0.7); color: #fff; margin-bottom: 0;">Supprimer mon compte</button>
+                </form>
+            </div>
+        </div>
+
     {% elif view == 'register' %}
-        <!-- ================= PAGE D'INSCRIPTION ================= -->
+        <!-- ================= PAGE INSCRIPTION ================= -->
         <div class="login-page-container">
             <div class="login-content-wrapper">
                 <div class="login-left-side">
                     <h1>Class Master IMI</h1>
-                    <p>Créez votre compte enseignant pour gérer vos classes et suivre les notes de vos élèves en toute simplicité.</p>
+                    <p>Créez votre compte enseignant pour gérer vos classes et suivre les notes de vos élèves.</p>
                 </div>
                 <div class="login-right-side">
                     <div class="login-card">
@@ -537,7 +647,7 @@
                         {% if message %}
                             <div class="error">{{ message }}</div>
                         {% endif %}
-                        <form method="POST">
+                        <form method="POST" action="/?view=register">
                             <input type="hidden" name="action" value="register">
                             <input type="text" name="nom" placeholder="Nom complet" required autocomplete="off">
                             <input type="email" name="email" placeholder="Adresse e-mail" required autocomplete="off">
@@ -552,46 +662,36 @@
         </div>
 
     {% elif view == 'parent_space' %}
-        <!-- ================= ESPACE PARENTS / ELEVES ================= -->
+        <!-- ================= ESPACE PARENTS ================= -->
         <div class="login-page-container">
             <div class="login-content-wrapper">
                 <div class="login-left-side">
                     <h1>Espace Consultation</h1>
-                    <p>Consultez les notes de vos interrogations et devoirs par classe et par matière.</p>
+                    <p>Consultez les notes de votre enfant grâce à son code secret personnel.</p>
                 </div>
                 <div class="login-right-side">
                     <div class="login-card" style="max-width: 440px;">
-                        <h2 style="margin-bottom: 15px; font-size: 20px;">Rechercher des notes</h2>
-                        <form method="POST">
-                            <input type="hidden" name="action" value="search_notes">
-                            <select name="classe" required>
-                                <option value="" disabled selected>Choisir la classe...</option>
-                                {% for c in classes %}
-                                    <option value="{{ c }}" {% if classe_cherche == c %}selected{% endif %}>{{ c }}</option>
-                                {% endfor %}
-                            </select>
-                            <select name="nom_eleve" required>
-                                <option value="" disabled selected>Choisir votre nom...</option>
-                                {% for e in tous_eleves %}
-                                    <option value="{{ e.nom }}" {% if nom_cherche == e.nom %}selected{% endif %}>{{ e.nom }} ({{ e.classe }})</option>
-                                {% endfor %}
-                            </select>
-                            <select name="matiere" required>
-                                <option value="" disabled selected>Choisir une matière...</option>
-                                {% for m in matieres %}
-                                    <option value="{{ m }}" {% if matiere_cherche == m %}selected{% endif %}>{{ m }}</option>
-                                {% endfor %}
-                            </select>
-                            <button type="submit" class="btn-main" style="margin-top: 5px;">Consulter mes notes</button>
+                        <h2 style="margin-bottom: 15px; font-size: 20px;">Rechercher par Code Secret</h2>
+                        
+                        {% if message %}
+                            <div class="error">{{ message }}</div>
+                        {% endif %}
+
+                        <form method="POST" action="/?view=parent_space">
+                            <input type="hidden" name="action" value="search_by_code">
+                            <input type="text" name="code_secret" placeholder="Entrez le code secret (ex: A482)" required autocomplete="off" style="text-transform: uppercase; font-weight: bold; text-align: center; letter-spacing: 2px;">
+                            <button type="submit" class="btn-main" style="margin-top: 5px;">Consulter les notes</button>
                         </form>
 
                         {% if recherche_effectuee %}
-                            <div style="margin-top: 15px; text-align: left; max-height: 180px; overflow-y: auto;">
-                                <p style="font-size: 13px; margin-bottom: 8px; font-weight: bold;">Notes de {{ nom_cherche }} ({{ matiere_cherche }}) :</p>
+                            <div style="margin-top: 15px; text-align: left; max-height: 220px; overflow-y: auto;">
+                                <p style="font-size: 14px; margin-bottom: 10px; font-weight: bold; text-align: center; color: #ffeaa7;">Notes de : {{ eleve_trouve }}</p>
                                 {% if resultats %}
                                     <table>
                                         <thead>
                                             <tr>
+                                                <th>Semestre</th>
+                                                <th>Matière</th>
                                                 <th>Évaluation</th>
                                                 <th>Note</th>
                                             </tr>
@@ -599,6 +699,8 @@
                                         <tbody>
                                             {% for r in resultats %}
                                             <tr>
+                                                <td>{{ r.semestre }}</td>
+                                                <td>{{ r.matiere }}</td>
                                                 <td>{{ r.type_eval }}</td>
                                                 <td><strong>{{ r.note }}</strong> / 20</td>
                                             </tr>
@@ -606,7 +708,7 @@
                                         </tbody>
                                     </table>
                                 {% else %}
-                                    <p style="font-size: 13px; opacity: 0.8; text-align: center; margin-top: 10px;">Aucune note trouvée.</p>
+                                    <p style="font-size: 13px; opacity: 0.8; text-align: center; margin-top: 10px;">Aucune note enregistrée pour cet élève.</p>
                                 {% endif %}
                             </div>
                         {% endif %}
@@ -619,7 +721,7 @@
         </div>
 
     {% else %}
-        <!-- ================= PAGE DE CONNEXION ================= -->
+        <!-- ================= PAGE CONNEXION ================= -->
         <div class="login-page-container">
             <div class="login-content-wrapper">
                 <div class="login-left-side">
@@ -632,7 +734,7 @@
                         {% if message %}
                             <div class="error">{{ message }}</div>
                         {% endif %}
-                        <form method="POST">
+                        <form method="POST" action="/">
                             <input type="hidden" name="action" value="login">
                             <input type="email" name="email" placeholder="Adresse e-mail" required autocomplete="off">
                             <input type="password" name="password" placeholder="Mot de passe" required>
