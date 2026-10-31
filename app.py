@@ -63,6 +63,17 @@ def init_db():
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     message TEXT NOT NULL,
                     date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+
+    # Table de configuration pour stocker le code secret administrateur
+    conn.execute('''CREATE TABLE IF NOT EXISTS config (
+                    cle TEXT PRIMARY KEY,
+                    valeur TEXT NOT NULL)''')
+    
+    # Code secret admin par défaut s'il n'existe pas
+    code_admin_existe = conn.execute('SELECT * FROM config WHERE cle = ?', ('admin_code',)).fetchone()
+    if not code_admin_existe:
+        conn.execute('INSERT INTO config (cle, valeur) VALUES (?, ?)', ('admin_code', 'admin123'))
+        conn.commit()
     
     prof_existe = conn.execute('SELECT * FROM profs WHERE email = ?', ('prof@educmaster.bj',)).fetchone()
     if not prof_existe:
@@ -90,6 +101,54 @@ init_db()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    # 1. ESPACE ADMINISTRATION (Si connecté comme Admin)
+    if session.get('is_admin'):
+        view = request.args.get('view', 'admin_space')
+        message = ''
+        success_message_admin = ''
+        conn = get_db_connection()
+        
+        if request.method == 'POST':
+            action = request.form.get('action')
+            
+            if action == 'admin_add_eleve':
+                nouveau_nom = request.form.get('nouveau_nom', '').strip()
+                classe_cible = request.form.get('classe_cible')
+                code_saisi = request.form.get('code_secret_saisi', '').strip().upper()
+                
+                if nouveau_nom and classe_cible:
+                    code_secret = code_saisi if code_saisi else generer_code_secret()
+                    try:
+                        conn.execute('INSERT INTO eleves (nom, classe, code_secret) VALUES (?, ?, ?)', (nouveau_nom, classe_cible, code_secret))
+                        conn.commit()
+                        success_message_admin = f"Élève {nouveau_nom} ajouté avec succès !"
+                    except sqlite3.IntegrityError:
+                        message = "Ce code secret existe déjà."
+
+            elif action == 'admin_change_code':
+                ancien_code = request.form.get('ancien_admin_code', '').strip()
+                nouveau_code = request.form.get('nouveau_admin_code', '').strip()
+                
+                cfg = conn.execute('SELECT valeur FROM config WHERE cle = ?', ('admin_code',)).fetchone()
+                code_actuel = cfg['valeur'] if cfg else 'admin123'
+
+                if ancien_code == code_actuel:
+                    if nouveau_code:
+                        conn.execute('UPDATE config SET valeur = ? WHERE cle = ?', (nouveau_code, 'admin_code'))
+                        conn.commit()
+                        success_message_admin = "Code administrateur modifié avec succès !"
+                    else:
+                        message = "Le nouveau code ne peut pas être vide."
+                else:
+                    message = "L'ancien code administrateur est incorrect."
+                view = 'admin_settings'
+
+        tous_eleves = conn.execute('SELECT * FROM eleves ORDER BY classe ASC, nom ASC').fetchall()
+        conn.close()
+        return render_template('index.html', view=view, tous_eleves=tous_eleves, 
+                               classes=CLASSES_OFFICIELLES, message=message, success_message_admin=success_message_admin)
+
+    # 2. TABLEAU DE BORD PROFESSEUR
     if 'prof_id' in session:
         view = request.args.get('view', 'dashboard')
         message = ''
@@ -118,28 +177,6 @@ def index():
                     matiere_selectionnee = matiere
                     classe_selectionnee = classe
                     semestre_selectionne = semestre
-            
-            elif action_prof == 'add_eleve':
-                nouveau_nom = request.form.get('nouveau_nom', '').strip()
-                classe_cible = request.form.get('classe_cible')
-                code_saisi = request.form.get('code_secret_saisi', '').strip().upper()
-                
-                if nouveau_nom and classe_cible:
-                    code_secret = code_saisi if code_saisi else generer_code_secret()
-                    conn.execute('INSERT INTO eleves (nom, classe, code_secret) VALUES (?, ?, ?)', (nouveau_nom, classe_cible, code_secret))
-                    conn.commit()
-
-            elif action_prof == 'edit_eleve':
-                eleve_id = request.form.get('eleve_id')
-                nouveau_nom = request.form.get('nouveau_nom', '').strip()
-                nouveau_code = request.form.get('nouveau_code', '').strip().upper()
-                
-                if eleve_id and nouveau_nom:
-                    if nouveau_code:
-                        conn.execute('UPDATE eleves SET nom = ?, code_secret = ? WHERE id = ?', (nouveau_nom, nouveau_code, eleve_id))
-                    else:
-                        conn.execute('UPDATE eleves SET nom = ? WHERE id = ?', (nouveau_nom, eleve_id))
-                    conn.commit()
 
             elif action_prof == 'update_profile':
                 nouveau_nom = request.form.get('nom', '').strip()
@@ -179,11 +216,18 @@ def index():
         notes = conn.execute('SELECT * FROM notes WHERE matiere = ? AND classe = ? AND semestre = ?', 
                              (matiere_selectionnee, classe_selectionnee, semestre_selectionne)).fetchall()
         liste_eleves = conn.execute('SELECT * FROM eleves WHERE classe = ? ORDER BY nom ASC', (classe_selectionnee,)).fetchall()
-        tous_eleves = conn.execute('SELECT * FROM eleves ORDER BY nom ASC').fetchall()
         
         bilan_eleves = []
         for e in liste_eleves:
             notes_eleve = [n for n in notes if n['nom_eleve'] == e['nom']]
+            notes_dict = {n['type_eval']: n['note'] for n in notes_eleve}
+            
+            i1 = notes_dict.get('Interrogation 1', '-')
+            i2 = notes_dict.get('Interrogation 2', '-')
+            i3 = notes_dict.get('Interrogation 3', '-')
+            d1 = notes_dict.get('Devoir 1', '-')
+            d2 = notes_dict.get('Devoir 2', '-')
+            
             n_interro = [n['note'] for n in notes_eleve if 'Interrogation' in n['type_eval']]
             n_devoir = [n['note'] for n in notes_eleve if 'Devoir' in n['type_eval']]
             
@@ -202,6 +246,7 @@ def index():
             bilan_eleves.append({
                 'nom': e['nom'],
                 'notes': notes_eleve,
+                'i1': i1, 'i2': i2, 'i3': i3, 'd1': d1, 'd2': d2,
                 'moy_interro': round(m_interro, 2) if m_interro is not None else '-',
                 'moy_devoir': round(m_devoir, 2) if m_devoir is not None else '-',
                 'moy_gen': round(m_gen, 2) if m_gen is not None else '-'
@@ -214,18 +259,15 @@ def index():
         return render_template('index.html', view=view, prof_nom=session['prof_nom'], prof_info=prof_info,
                                matieres=MATIERES_OFFICIELLES, classes=CLASSES_OFFICIELLES, semestres=SEMESTRES_OFFICIELS,
                                matiere_active=matiere_selectionnee, classe_active=classe_selectionnee, semestre_actif=semestre_selectionne,
-                               bilan_eleves=bilan_eleves, liste_eleves=liste_eleves, tous_eleves=tous_eleves,
+                               bilan_eleves=bilan_eleves, liste_eleves=liste_eleves,
                                notifications=notifications, message=message, success_message=success_message)
 
+    # 3. ACCÈS PUBLICS / LOGIN
     view = request.args.get('view', 'login')
     message = ''
     resultats_recherche = None
     recherche_effectuee = False
     eleve_trouve = ""
-
-    conn = get_db_connection()
-    tous_eleves = conn.execute('SELECT * FROM eleves ORDER BY nom ASC').fetchall()
-    conn.close()
 
     if request.method == 'POST':
         action = request.form.get('action')
@@ -280,6 +322,20 @@ def index():
                 session['prof_nom'] = nom
                 return redirect(url_for('index'))
 
+        elif action == 'admin_auth':
+            admin_code = request.form.get('admin_code', '').strip()
+            conn = get_db_connection()
+            cfg = conn.execute('SELECT valeur FROM config WHERE cle = ?', ('admin_code',)).fetchone()
+            code_actuel = cfg['valeur'] if cfg else 'admin123'
+            conn.close()
+
+            if admin_code == code_actuel:
+                session['is_admin'] = True
+                return redirect(url_for('index'))
+            else:
+                message = "Code administrateur incorrect."
+                view = 'admin_login'
+
         elif action == 'search_by_code':
             view = 'parent_space'
             recherche_effectuee = True
@@ -300,7 +356,7 @@ def index():
             conn.close()
 
     return render_template('index.html', view=view, message=message, 
-                           matieres=MATIERES_OFFICIELLES, classes=CLASSES_OFFICIELLES, semestres=SEMESTRES_OFFICIELS, tous_eleves=tous_eleves,
+                           matieres=MATIERES_OFFICIELLES, classes=CLASSES_OFFICIELLES, semestres=SEMESTRES_OFFICIELS,
                            resultats=resultats_recherche, recherche_effectuee=recherche_effectuee,
                            eleve_trouve=eleve_trouve)
 
@@ -314,15 +370,15 @@ def delete_note(id):
     conn.close()
     return redirect(url_for('index'))
 
-@app.route('/delete_eleve/<int:id>')
-def delete_eleve(id):
-    if 'prof_id' not in session:
-        return redirect(url_for('index'))
+@app.route('/admin_delete_eleve/<int:id>')
+def admin_delete_eleve(id):
+    if not session.get('is_admin'):
+        return redirect(url_for('index', view='admin_login'))
     conn = get_db_connection()
     conn.execute('DELETE FROM eleves WHERE id = ?', (id,))
     conn.commit()
     conn.close()
-    return redirect(url_for('index'))
+    return redirect(url_for('index', view='admin_space'))
 
 @app.route('/export_csv')
 def export_csv():
