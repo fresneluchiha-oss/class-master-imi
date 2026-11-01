@@ -424,7 +424,38 @@
 
         function declencherScanner(input) {
             if (input.files && input.files[0]) {
-                alert("Photo du cahier enregistrée ! Analyse de la page en cours...");
+                const fichier = input.files[0];
+                
+                if (!fichier.type.startsWith('image/')) {
+                    alert("❌ Invalide : Le fichier sélectionné n'est pas une image.");
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('photo_cahier', fichier);
+                formData.append('classe', document.getElementById('select-classe') ? document.getElementById('select-classe').value : '');
+                formData.append('matiere', document.getElementById('select-matiere') ? document.getElementById('select-matiere').value : '');
+                formData.append('semestre', document.getElementById('select-semestre') ? document.getElementById('select-semestre').value : '');
+
+                alert("📸 Scan en cours... Analyse de la photo.");
+
+                fetch('/scanner_notes', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("✅ Photo valide ! Traitement en cours.");
+                        location.reload();
+                    } else {
+                        alert("❌ Invalide : " + (data.message || "La photo n'a pas pu être validée."));
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert("❌ Invalide : Erreur de connexion avec le serveur.");
+                });
             }
         }
 

@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, session, Response
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import random
 import string
+import os
 
 app = Flask(__name__)
 app.secret_key = 'cle_secrete_class_master_imi'
@@ -411,6 +412,27 @@ def index():
                            matieres=MATIERES_OFFICIELLES, classes=CLASSES_OFFICIELLES, semestres=SEMESTRES_OFFICIELS,
                            resultats=resultats_recherche, recherche_effectuee=recherche_effectuee,
                            eleve_trouve=eleve_trouve, messages_recents=messages_recents)
+
+@app.route('/scanner_notes', methods=['POST'])
+def scanner_notes():
+    if 'prof_id' not in session:
+        return jsonify({'success': False, 'message': 'Non autorisé'}), 403
+        
+    if 'photo_cahier' not in request.files:
+        return jsonify({'success': False, 'message': 'Aucun fichier trouvé'})
+        
+    photo = request.files['photo_cahier']
+    
+    if photo.filename == '':
+        return jsonify({'success': False, 'message': 'Nom de fichier vide'})
+        
+    extensions_autorisees = ['.jpg', '.jpeg', '.png', '.webp']
+    extension = os.path.splitext(photo.filename)[1].lower()
+    
+    if extension not in extensions_autorisees:
+        return jsonify({'success': False, 'message': 'Format invalide'})
+        
+    return jsonify({'success': True, 'message': 'Photo valide'})
 
 @app.route('/admin_delete_eleve/<int:id>')
 def admin_delete_eleve(id):
