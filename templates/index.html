@@ -18,6 +18,18 @@
             --text-muted: #94a3b8;
         }
 
+        body.light-theme {
+            --bg-gradient: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 50%, #f1f5f9 100%);
+            --glass-bg: rgba(255, 255, 255, 0.6);
+            --glass-border: rgba(0, 0, 0, 0.12);
+            --glass-card: rgba(255, 255, 255, 0.85);
+            --accent-primary: #0284c7;
+            --accent-secondary: #4f46e5;
+            --accent-success: #16a34a;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -33,8 +45,9 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 15px;
             color: var(--text-main);
+            transition: background 0.3s ease, color 0.3s ease;
         }
 
         @keyframes gradientShift {
@@ -56,7 +69,7 @@
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            gap: 50px;
+            gap: 40px;
         }
 
         .login-left-side {
@@ -65,9 +78,9 @@
         }
 
         .login-left-side h1 {
-            font-size: 42px;
+            font-size: 38px;
             font-weight: 800;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             background: linear-gradient(to right, #38bdf8, #818cf8, #c084fc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -75,8 +88,8 @@
         }
 
         .login-left-side p {
-            font-size: 18px;
-            line-height: 1.6;
+            font-size: 16px;
+            line-height: 1.5;
             color: var(--text-muted);
         }
 
@@ -94,36 +107,17 @@
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--glass-border);
             border-radius: 20px;
-            padding: 35px;
+            padding: 30px;
             width: 100%;
-            max-width: 440px;
+            max-width: 420px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
             text-align: center;
         }
 
-        .login-card input, .login-card select {
+        .login-card input, .login-card select, .card input, .card select {
             width: 100%;
-            padding: 13px 16px;
-            margin-bottom: 16px;
-            border: 1px solid var(--glass-border);
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-main);
-            font-size: 15px;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-
-        .login-card input:focus, .login-card select:focus {
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
-        }
-
-        /* Harmonisation de TOUS les inputs et selects */
-        .card input, .card select {
-            width: 100%;
-            padding: 13px 16px;
-            margin-bottom: 16px;
+            padding: 12px 14px;
+            margin-bottom: 14px;
             border: 1px solid var(--glass-border);
             border-radius: 10px;
             background: rgba(255, 255, 255, 0.05);
@@ -136,29 +130,40 @@
             text-transform: uppercase;
         }
 
-        .card input::placeholder, .login-card input::placeholder {
-            color: var(--text-muted);
-            font-size: 14px;
+        .grid-note-input {
+            width: 65px !important;
+            padding: 8px 4px !important;
+            margin-bottom: 0 !important;
+            text-align: center;
+            border-radius: 8px !important;
+            border: 1px solid var(--glass-border) !important;
+            background: rgba(255, 255, 255, 0.07) !important;
+            color: var(--text-main) !important;
+            font-weight: 600;
+        }
+        .grid-note-input:focus {
+            border-color: var(--accent-primary) !important;
+            background: rgba(56, 189, 248, 0.15) !important;
         }
 
         select option {
             background: #0f172a;
-            color: var(--text-main);
+            color: #ffffff;
         }
 
         .btn-main {
             width: 100%;
-            padding: 13px;
+            padding: 12px;
             border: none;
             border-radius: 10px;
             background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
             color: #ffffff;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         .btn-main:hover {
@@ -168,64 +173,52 @@
 
         .btn-alt {
             width: 100%;
-            padding: 13px;
+            padding: 12px;
             border: 1px solid var(--glass-border);
             border-radius: 10px;
             background: var(--glass-bg);
             color: var(--text-main);
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             text-decoration: none;
             display: inline-block;
             transition: all 0.3s ease;
-            margin-bottom: 15px;
-        }
-
-        .btn-alt:hover {
-            background: rgba(255, 255, 255, 0.12);
-            border-color: var(--text-muted);
+            margin-bottom: 12px;
         }
 
         .fb-divider {
             border-bottom: 1px solid var(--glass-border);
-            margin: 20px 0;
+            margin: 16px 0;
         }
 
         .error {
             background: rgba(239, 68, 68, 0.15);
             color: #fca5a5;
-            padding: 10px 14px;
+            padding: 10px 12px;
             border-radius: 8px;
-            font-size: 14px;
-            margin-bottom: 16px;
+            font-size: 13px;
+            margin-bottom: 14px;
             border: 1px solid rgba(239, 68, 68, 0.3);
         }
 
         .success {
             background: rgba(52, 211, 153, 0.15);
             color: #6ee7b7;
-            padding: 10px 14px;
+            padding: 10px 12px;
             border-radius: 8px;
-            font-size: 14px;
-            margin-bottom: 16px;
+            font-size: 13px;
+            margin-bottom: 14px;
             border: 1px solid rgba(52, 211, 153, 0.3);
         }
 
         .switch-link {
             display: block;
-            margin-top: 15px;
+            margin-top: 12px;
             color: var(--accent-primary);
-            font-size: 14px;
+            font-size: 13px;
             text-decoration: none;
             font-weight: 500;
-            opacity: 0.9;
-            transition: opacity 0.2s;
-        }
-
-        .switch-link:hover {
-            opacity: 1;
-            text-decoration: underline;
         }
 
         .dashboard-wrapper {
@@ -241,39 +234,33 @@
             backdrop-filter: blur(16px);
             border: 1px solid var(--glass-border);
             border-radius: 20px;
-            padding: 22px 35px;
-            margin-bottom: 25px;
+            padding: 20px 30px;
+            margin-bottom: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
         .logout-btn {
             background: rgba(239, 68, 68, 0.15);
             color: #fca5a5;
             text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 10px;
+            padding: 8px 16px;
+            border-radius: 8px;
             border: 1px solid rgba(239, 68, 68, 0.3);
             font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .logout-btn:hover {
-            background: rgba(239, 68, 68, 0.3);
+            font-size: 13px;
         }
 
         .settings-btn {
             background: var(--glass-bg);
             color: var(--text-main);
             text-decoration: none;
-            padding: 10px 18px;
-            border-radius: 10px;
+            padding: 8px 16px;
+            border-radius: 8px;
             border: 1px solid var(--glass-border);
             font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .settings-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
+            font-size: 13px;
         }
 
         .selectors-bar {
@@ -281,41 +268,42 @@
             backdrop-filter: blur(16px);
             border: 1px solid var(--glass-border);
             border-radius: 20px;
-            padding: 20px 30px;
-            margin-bottom: 25px;
+            padding: 18px 25px;
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
-            gap: 25px;
+            gap: 20px;
             flex-wrap: wrap;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
         .selectors-bar select {
-            padding: 10px 15px;
-            border-radius: 10px;
+            padding: 8px 12px;
+            border-radius: 8px;
             border: 1px solid var(--glass-border);
             background: rgba(255, 255, 255, 0.05);
             color: var(--text-main);
             font-weight: 600;
+            font-size: 13px;
             outline: none;
-            cursor: pointer;
         }
 
-        .container {
-            display: grid;
-            grid-template-columns: 320px 1fr;
-            gap: 25px;
-        }
-
-        @media (max-width: 1024px) {
-            body { align-items: flex-start; }
-            .login-content-wrapper { flex-direction: column; text-align: center; }
-            .login-left-side { padding-right: 0; margin-bottom: 20px; }
-            .container { grid-template-columns: 1fr; }
-            .header { flex-direction: column; gap: 15px; align-items: stretch; }
-            .header > div { display: grid !important; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-            .header a { text-align: center; padding: 10px 5px !important; font-size: 12px !important; }
-            .selectors-bar { flex-direction: column; align-items: stretch; }
+        @media (max-width: 900px) {
+            body { align-items: flex-start; padding: 10px; }
+            .login-content-wrapper { flex-direction: column; text-align: center; gap: 20px; }
+            .login-left-side { padding-right: 0; }
+            .login-left-side h1 { font-size: 26px; }
+            .login-left-side p { font-size: 14px; }
+            .header { flex-direction: column; align-items: stretch; text-align: center; padding: 15px; gap: 12px; }
+            .header > div { display: flex !important; flex-wrap: wrap; justify-content: center; gap: 8px; }
+            .selectors-bar { flex-direction: column; align-items: stretch; gap: 12px; padding: 15px; }
+            .selectors-bar > div { display: flex; flex-direction: column; gap: 5px; width: 100%; }
+            .selectors-bar select { width: 100% !important; }
+            .card { padding: 15px; border-radius: 15px; width: 100% !important; }
+            .dashboard-wrapper div[style*="grid-template-columns"] { display: flex !important; flex-direction: column !important; gap: 15px !important; }
+            .card input, .card select, .login-card input, .login-card select, .card button { width: 100% !important; font-size: 14px; box-sizing: border-box; }
+            .dashboard-wrapper div[style*="overflow-x: auto"] { -webkit-overflow-scrolling: touch; border-radius: 10px; border: 1px solid var(--glass-border); }
+            .grid-note-input { width: 55px !important; padding: 6px 2px !important; font-size: 14px !important; }
+            th, td { padding: 8px 6px; font-size: 12px; }
         }
 
         .card {
@@ -323,79 +311,28 @@
             backdrop-filter: blur(16px);
             border: 1px solid var(--glass-border);
             border-radius: 20px;
-            padding: 28px;
+            padding: 24px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
             text-align: left;
         }
 
         .card h3 {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 600;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             border-bottom: 1px solid var(--glass-border);
-            padding-bottom: 12px;
+            padding-bottom: 10px;
             color: var(--text-main);
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        th, td {
-            padding: 12px 10px;
-            text-align: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            font-size: 13px;
-            vertical-align: middle;
-        }
-
-        th:first-child, td:first-child {
-            text-align: left;
-        }
-
-        th { 
-            background: rgba(255, 255, 255, 0.03); 
-            font-weight: 600;
-            color: var(--text-muted);
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .btn-delete {
-            background: rgba(239, 68, 68, 0.2);
-            color: #fca5a5;
-            padding: 2px 6px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-size: 11px;
-            font-weight: bold;
-            margin-left: 4px;
-            border: 1px solid rgba(239, 68, 68, 0.4);
-            transition: background 0.2s;
-        }
-
-        .btn-delete:hover {
-            background: rgba(239, 68, 68, 0.4);
-        }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px 8px; text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.06); font-size: 13px; vertical-align: middle; white-space: nowrap; }
+        th:first-child, td:first-child { text-align: left; }
+        th { background: rgba(255, 255, 255, 0.03); font-weight: 600; color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
 
         .btn-export {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            padding: 10px 18px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 600;
-            display: inline-block;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-            transition: all 0.3s;
-        }
-        .btn-export:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+            color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-block;
         }
     </style>
     <script>
@@ -405,6 +342,19 @@
             const semestre = document.getElementById('select-semestre').value;
             location.href = `/?classe=${encodeURIComponent(classe)}&matiere=${encodeURIComponent(matiere)}&semestre=${encodeURIComponent(semestre)}`;
         }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+            const isLight = document.body.classList.contains('light-theme');
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-theme');
+            }
+        });
     </script>
 </head>
 <body>
@@ -413,8 +363,8 @@
         <!-- ================= TABLEAU DE BORD PROFESSEUR ================= -->
         <div class="dashboard-wrapper" style="align-self: flex-start;">
             <div class="header">
-                <h2>Class Master IMI <span style="font-weight: 400; opacity: 0.7; font-size: 16px;">| Prof. {{ prof_nom }}</span></h2>
-                <div style="display: flex; gap: 12px; align-items: center;">
+                <h2>Class Master IMI <span style="font-weight: 400; opacity: 0.7; font-size: 15px;">| Prof. {{ prof_nom }}</span></h2>
+                <div>
                     <a href="/export_csv" class="btn-export">📥 Exporter</a>
                     <a href="/?view=settings" class="settings-btn">⚙️ Paramètres</a>
                     <a href="/logout" class="logout-btn">Déconnexion</a>
@@ -423,7 +373,7 @@
 
             <div class="selectors-bar">
                 <div>
-                    <label style="font-size: 13px; font-weight: 600; margin-right: 8px; color: var(--text-muted);">🏫 Classe :</label>
+                    <label style="font-size: 12px; font-weight: 600; color: var(--text-muted);">🏫 Classe :</label>
                     <select id="select-classe" onchange="updateView()">
                         {% for c in classes %}
                             <option value="{{ c }}" {% if c == classe_active %}selected{% endif %}>{{ c }}</option>
@@ -431,7 +381,7 @@
                     </select>
                 </div>
                 <div>
-                    <label style="font-size: 13px; font-weight: 600; margin-right: 8px; color: var(--text-muted);">📅 Semestre :</label>
+                    <label style="font-size: 12px; font-weight: 600; color: var(--text-muted);">📅 Semestre :</label>
                     <select id="select-semestre" onchange="updateView()">
                         {% for s in semestres %}
                             <option value="{{ s }}" {% if s == semestre_actif %}selected{% endif %}>{{ s }}</option>
@@ -439,8 +389,8 @@
                     </select>
                 </div>
                 <div style="flex-grow: 1;">
-                    <label style="font-size: 13px; font-weight: 600; margin-right: 8px; color: var(--text-muted);">📚 Matière :</label>
-                    <select id="select-matiere" onchange="updateView()" style="width: 60%;">
+                    <label style="font-size: 12px; font-weight: 600; color: var(--text-muted);">📚 Matière :</label>
+                    <select id="select-matiere" onchange="updateView()" style="width: 100%;">
                         {% for m in matieres %}
                             <option value="{{ m }}" {% if m == matiere_active %}selected{% endif %}>{{ m }}</option>
                         {% endfor %}
@@ -448,65 +398,21 @@
                 </div>
             </div>
 
-            <div class="container">
-                <div style="display: flex; flex-direction: column; gap: 25px;">
-                    <div class="card">
-                        <h3>Publier une note</h3>
-                        <form method="POST">
-                            <input type="hidden" name="action_prof" value="add_note">
-                            <input type="hidden" name="classe" value="{{ classe_active }}">
-                            <input type="hidden" name="matiere" value="{{ matiere_active }}">
-                            <input type="hidden" name="semestre" value="{{ semestre_actif }}">
+            {% if success_message %}<div class="success">{{ success_message }}</div>{% endif %}
+            {% if message %}<div class="error">{{ message }}</div>{% endif %}
 
-                            <div style="margin-bottom: 16px;">
-                                <label style="font-size: 13px; display: block; margin-bottom: 6px; color: var(--text-muted);">Évaluation</label>
-                                <select name="type_eval" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: rgba(255, 255, 255, 0.05); color: #fff; outline: none;">
-                                    <option value="" disabled selected>Choisir le type...</option>
-                                    <option value="Interrogation 1">Interrogation 1</option>
-                                    <option value="Interrogation 2">Interrogation 2</option>
-                                    <option value="Interrogation 3">Interrogation 3</option>
-                                    <option value="Devoir 1">Devoir 1</option>
-                                    <option value="Devoir 2">Devoir 2</option>
-                                </select>
-                            </div>
-                            <div style="margin-bottom: 16px;">
-                                <label style="font-size: 13px; display: block; margin-bottom: 6px; color: var(--text-muted);">Élève</label>
-                                <select name="eleve" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: rgba(255, 255, 255, 0.05); color: #fff; outline: none;">
-                                    <option value="" disabled selected>Choisir un élève...</option>
-                                    {% for e in liste_eleves %}
-                                        <option value="{{ e.nom }}">{{ e.nom }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div style="margin-bottom: 20px;">
-                                <label style="font-size: 13px; display: block; margin-bottom: 6px; color: var(--text-muted);">Note (/20)</label>
-                                <input type="number" step="0.25" min="0" max="20" name="note" placeholder="16.5" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: rgba(255, 255, 255, 0.05); color: #fff; outline: none;">
-                            </div>
-                            <button type="submit" class="btn-main">Enregistrer la note</button>
-                        </form>
-                    </div>
-
-                    <div class="card">
-                        <h3>🔔 Notifications</h3>
-                        <div style="max-height: 160px; overflow-y: auto;">
-                            <ul style="list-style: none; font-size: 13px;">
-                                {% for notif in notifications %}
-                                    <li style="background: rgba(255, 255, 255, 0.03); padding: 8px 10px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid var(--accent-success);">
-                                        {{ notif.message }}
-                                        <div style="font-size: 10px; opacity: 0.5; margin-top: 2px;">{{ notif.date_creation }}</div>
-                                    </li>
-                                {% else %}
-                                    <li style="opacity: 0.5; font-size: 12px;">Aucune notification récente.</li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
+            <!-- SAISIE DIRECTE DANS LE TABLEAU GLOBAL -->
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                    <h3 style="margin-bottom: 0; border: none; padding: 0;">Saisie des Notes — {{ matiere_active }} <span style="font-size: 12px; font-weight: 400; color: var(--accent-primary);">({{ semestre_actif }})</span></h3>
+                    <small style="color: var(--text-muted);">Videz une case pour supprimer la note et mettre à jour les moyennes</small>
                 </div>
 
-                <div class="card">
-                    <h3>Bilan Académique — {{ matiere_active }} <span style="font-size: 13px; font-weight: 400; color: var(--accent-primary);">({{ semestre_actif }})</span></h3>
+                <form method="POST">
+                    <input type="hidden" name="action_prof" value="save_all_notes">
+
                     <div style="max-height: 520px; overflow-x: auto;">
-                        <table style="min-width: 700px;">
+                        <table style="min-width: 750px;">
                             <thead>
                                 <tr>
                                     <th style="width: 22%;">Élève</th>
@@ -524,37 +430,16 @@
                                 {% for b in bilan_eleves %}
                                 <tr>
                                     <td><strong style="font-weight: 600;">{{ b.nom }}</strong></td>
-                                    <td>
-                                        {% if b.i1 != '-' %}
-                                            {% set note_obj = b.notes | selectattr('type_eval', 'equalto', 'Interrogation 1') | first %}
-                                            {{ b.i1 }} {% if note_obj %}<a href="/delete/{{ note_obj.id }}" class="btn-delete" title="Supprimer">×</a>{% endif %}
-                                        {% else %}<span style="opacity: 0.3;">-</span>{% endif %}
-                                    </td>
-                                    <td>
-                                        {% if b.i2 != '-' %}
-                                            {% set note_obj = b.notes | selectattr('type_eval', 'equalto', 'Interrogation 2') | first %}
-                                            {{ b.i2 }} {% if note_obj %}<a href="/delete/{{ note_obj.id }}" class="btn-delete" title="Supprimer">×</a>{% endif %}
-                                        {% else %}<span style="opacity: 0.3;">-</span>{% endif %}
-                                    </td>
-                                    <td>
-                                        {% if b.i3 != '-' %}
-                                            {% set note_obj = b.notes | selectattr('type_eval', 'equalto', 'Interrogation 3') | first %}
-                                            {{ b.i3 }} {% if note_obj %}<a href="/delete/{{ note_obj.id }}" class="btn-delete" title="Supprimer">×</a>{% endif %}
-                                        {% else %}<span style="opacity: 0.3;">-</span>{% endif %}
-                                    </td>
+                                    
+                                    <td><input type="number" step="0.25" min="0" max="20" name="note_{{ b.nom }}_Interrogation-1" value="{{ b.i1 }}" placeholder="-" class="grid-note-input"></td>
+                                    <td><input type="number" step="0.25" min="0" max="20" name="note_{{ b.nom }}_Interrogation-2" value="{{ b.i2 }}" placeholder="-" class="grid-note-input"></td>
+                                    <td><input type="number" step="0.25" min="0" max="20" name="note_{{ b.nom }}_Interrogation-3" value="{{ b.i3 }}" placeholder="-" class="grid-note-input"></td>
+                                    
                                     <td style="background: rgba(255,255,255,0.02); font-weight: 600;">{{ b.moy_interro }}</td>
-                                    <td>
-                                        {% if b.d1 != '-' %}
-                                            {% set note_obj = b.notes | selectattr('type_eval', 'equalto', 'Devoir 1') | first %}
-                                            {{ b.d1 }} {% if note_obj %}<a href="/delete/{{ note_obj.id }}" class="btn-delete" title="Supprimer">×</a>{% endif %}
-                                        {% else %}<span style="opacity: 0.3;">-</span>{% endif %}
-                                    </td>
-                                    <td>
-                                        {% if b.d2 != '-' %}
-                                            {% set note_obj = b.notes | selectattr('type_eval', 'equalto', 'Devoir 2') | first %}
-                                            {{ b.d2 }} {% if note_obj %}<a href="/delete/{{ note_obj.id }}" class="btn-delete" title="Supprimer">×</a>{% endif %}
-                                        {% else %}<span style="opacity: 0.3;">-</span>{% endif %}
-                                    </td>
+                                    
+                                    <td><input type="number" step="0.25" min="0" max="20" name="note_{{ b.nom }}_Devoir-1" value="{{ b.d1 }}" placeholder="-" class="grid-note-input"></td>
+                                    <td><input type="number" step="0.25" min="0" max="20" name="note_{{ b.nom }}_Devoir-2" value="{{ b.d2 }}" placeholder="-" class="grid-note-input"></td>
+                                    
                                     <td style="background: rgba(255,255,255,0.02); font-weight: 600;">{{ b.moy_devoir }}</td>
                                     <td><strong style="color: #38bdf8; font-size: 15px;">{{ b.moy_gen }}</strong></td>
                                 </tr>
@@ -566,7 +451,11 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
+
+                    <div style="margin-top: 20px; text-align: right;">
+                        <button type="submit" class="btn-main" style="max-width: 250px; margin-bottom: 0;">💾 Enregistrer toutes les notes</button>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -574,55 +463,66 @@
         <!-- ================= PAGE PARAMÈTRES PROF ================= -->
         <div class="login-page-container">
             <div class="login-card" style="max-width: 500px; text-align: left;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
                     <h2>⚙️ Paramètres</h2>
-                    <a href="/" style="color: var(--accent-primary); text-decoration: none; font-size: 14px;">⬅️ Retour</a>
+                    <a href="/" style="color: var(--accent-primary); text-decoration: none; font-size: 13px;">⬅️ Retour</a>
                 </div>
 
                 {% if message %}<div class="error">{{ message }}</div>{% endif %}
                 {% if success_message %}<div class="success">{{ success_message }}</div>{% endif %}
 
+                <!-- Option Thème Visuel -->
+                <div style="margin-bottom: 20px; background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="font-size: 14px;">🎨 Apparence du site</strong>
+                        <p style="font-size: 11px; color: var(--text-muted);">Basculez entre le Mode Sombre et le Mode Clair</p>
+                    </div>
+                    <button type="button" onclick="toggleTheme()" class="btn-alt" style="width: auto; margin: 0; padding: 6px 12px; font-size: 12px;">🌓 Changer thème</button>
+                </div>
+
+                <!-- Informations Enseignant -->
                 <form method="POST" action="/?view=settings">
                     <input type="hidden" name="action_prof" value="update_profile">
-                    <h4 style="margin-bottom: 12px; font-size: 15px; border-bottom: 1px solid var(--glass-border); padding-bottom: 6px; color: var(--text-muted);">Informations</h4>
-                    <label style="font-size: 13px;">Nom complet</label>
+                    <h4 style="margin-bottom: 10px; font-size: 14px; border-bottom: 1px solid var(--glass-border); padding-bottom: 5px; color: var(--text-muted);">Informations personnelles</h4>
+                    <label style="font-size: 12px;">Nom complet</label>
                     <input type="text" name="nom" value="{{ prof_info.nom }}" required>
                     
-                    <label style="font-size: 13px;">Adresse e-mail</label>
+                    <label style="font-size: 12px;">Adresse e-mail</label>
                     <input type="email" name="email" value="{{ prof_info.email }}" required>
                     
-                    <button type="submit" class="btn-main">Mettre à jour</button>
+                    <button type="submit" class="btn-main">Mettre à jour le profil</button>
                 </form>
 
-                <form method="POST" action="/?view=settings" style="margin-top: 25px;">
+                <!-- Sécurité -->
+                <form method="POST" action="/?view=settings" style="margin-top: 20px;">
                     <input type="hidden" name="action_prof" value="update_password">
-                    <h4 style="margin-bottom: 12px; font-size: 15px; border-bottom: 1px solid var(--glass-border); padding-bottom: 6px; color: var(--text-muted);">Sécurité</h4>
-                    <label style="font-size: 13px;">Ancien mot de passe</label>
+                    <h4 style="margin-bottom: 10px; font-size: 14px; border-bottom: 1px solid var(--glass-border); padding-bottom: 5px; color: var(--text-muted);">Sécurité & Mot de passe</h4>
+                    <label style="font-size: 12px;">Ancien mot de passe</label>
                     <input type="password" name="ancien_password" required>
                     
-                    <label style="font-size: 13px;">Nouveau mot de passe</label>
+                    <label style="font-size: 12px;">Nouveau mot de passe</label>
                     <input type="password" name="nouveau_password" required>
                     
                     <button type="submit" class="btn-alt">Changer le mot de passe</button>
                 </form>
 
-                <!-- Zone de Danger : Suppression de Compte -->
-                <form method="POST" action="/?view=settings" style="margin-top: 25px; border-top: 1px solid rgba(239, 68, 68, 0.3); padding-top: 15px;" onsubmit="return confirm('⚠️ Attention : Voulez-vous vraiment supprimer définitivement votre compte enseignant ? Cette action est irréversible.');">
+                <!-- Zone de Danger -->
+                <form method="POST" action="/?view=settings" style="margin-top: 20px; border-top: 1px solid rgba(239, 68, 68, 0.3); padding-top: 14px;" onsubmit="return confirm('⚠️ Attention : Voulez-vous vraiment supprimer définitivement votre compte enseignant ? Cette action est irréversible.');">
                     <input type="hidden" name="action_prof" value="delete_account">
-                    <h4 style="margin-bottom: 8px; font-size: 15px; color: #fca5a5;">🗑️ Zone de danger</h4>
-                    <p style="font-size: 12px; opacity: 0.8; margin-bottom: 12px; color: var(--text-muted);">La suppression de votre compte effacera vos identifiants d'accès.</p>
+                    <h4 style="margin-bottom: 6px; font-size: 14px; color: #fca5a5;">🗑️ Zone de danger</h4>
+                    <p style="font-size: 11px; opacity: 0.8; margin-bottom: 10px; color: var(--text-muted);">La suppression de votre compte effacera vos identifiants d'accès.</p>
                     <button type="submit" class="btn-main" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); margin-bottom: 0;">Supprimer mon compte</button>
                 </form>
             </div>
         </div>
 
     {% elif session.get('is_admin') and view == 'admin_settings' %}
-        <!-- ================= PARAMÈTRES ADMIN (MODIFIER CODE SECRET) ================= -->
+        <!-- ================= PARAMÈTRES ADMIN ================= -->
         <div class="login-page-container">
-            <div class="login-card" style="max-width: 480px; text-align: left;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h2>⚙️ Configuration Administrateur</h2>
-                    <a href="/?view=admin_space" style="color: var(--accent-primary); text-decoration: none; font-size: 14px;">⬅️ Tableau de bord</a>
+            <div class="login-card" style="max-width: 450px; text-align: left;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                    <h2>⚙️ Configuration Admin</h2>
+                    <a href="/?view=admin_space" style="color: var(--accent-primary); text-decoration: none; font-size: 13px;">⬅️ Tableau de bord</a>
                 </div>
 
                 {% if message %}<div class="error">{{ message }}</div>{% endif %}
@@ -630,12 +530,12 @@
 
                 <form method="POST" action="/?view=admin_settings">
                     <input type="hidden" name="action" value="admin_change_code">
-                    <h4 style="margin-bottom: 12px; font-size: 15px; border-bottom: 1px solid var(--glass-border); padding-bottom: 6px; color: var(--text-muted);">Sécurité de l'accès Admin</h4>
+                    <h4 style="margin-bottom: 10px; font-size: 14px; border-bottom: 1px solid var(--glass-border); padding-bottom: 5px; color: var(--text-muted);">Sécurité de l'accès Admin</h4>
                     
-                    <label style="font-size: 13px;">Code Administrateur actuel</label>
+                    <label style="font-size: 12px;">Code Administrateur actuel</label>
                     <input type="password" name="ancien_admin_code" placeholder="Ex: admin123" required autocomplete="off">
                     
-                    <label style="font-size: 13px;">Nouveau Code Administrateur</label>
+                    <label style="font-size: 12px;">Nouveau Code Administrateur</label>
                     <input type="password" name="nouveau_admin_code" placeholder="Entrez le nouveau code" required autocomplete="off">
                     
                     <button type="submit" class="btn-main" style="background: linear-gradient(135deg, #2563eb 100%, #1e40af 0%);">Mettre à jour le code secret</button>
@@ -653,7 +553,7 @@
                 </div>
                 <div class="login-right-side">
                     <div class="login-card">
-                        <h2 style="margin-bottom: 20px; font-size: 22px;">Créer un compte</h2>
+                        <h2 style="margin-bottom: 18px; font-size: 20px;">Créer un compte</h2>
                         {% if message %}<div class="error">{{ message }}</div>{% endif %}
                         <form method="POST" action="/?view=register">
                             <input type="hidden" name="action" value="register">
@@ -672,9 +572,9 @@
     {% elif view == 'admin_login' and not session.get('is_admin') %}
         <!-- ================= CONNEXION ADMIN ================= -->
         <div class="login-page-container">
-            <div class="login-card" style="max-width: 400px;">
-                <h2 style="margin-bottom: 15px; font-size: 22px;">🛡️ Administration</h2>
-                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Accès réservé à la gestion des élèves et des codes secrets.</p>
+            <div class="login-card" style="max-width: 380px;">
+                <h2 style="margin-bottom: 12px; font-size: 20px;">🛡️ Administration</h2>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 18px;">Accès réservé à la gestion des élèves et des codes secrets.</p>
                 {% if message %}<div class="error">{{ message }}</div>{% endif %}
                 <form method="POST" action="/">
                     <input type="hidden" name="action" value="admin_auth">
@@ -690,7 +590,7 @@
         <div class="dashboard-wrapper" style="align-self: flex-start; max-width: 1100px; margin: auto;">
             <div class="header">
                 <h2>🛡️ Administration — Gestion des Élèves</h2>
-                <div style="display: flex; gap: 12px; align-items: center;">
+                <div>
                     <a href="/?view=admin_settings" class="settings-btn">⚙️ Configuration Admin</a>
                     <a href="/logout" class="logout-btn">Quitter l'Admin</a>
                 </div>
@@ -699,25 +599,25 @@
             {% if success_message_admin %}<div class="success">{{ success_message_admin }}</div>{% endif %}
             {% if message %}<div class="error">{{ message }}</div>{% endif %}
 
-            <div style="display: grid; grid-template-columns: 1fr 1.6fr; gap: 25px;">
+            <div style="display: grid; grid-template-columns: 1fr 1.6fr; gap: 20px;">
                 <div class="card">
                     <h3>Nouvel Élève</h3>
                     <form method="POST" action="/?view=admin_space">
                         <input type="hidden" name="action" value="admin_add_eleve">
-                        <div style="margin-bottom: 15px;">
-                            <label style="font-size: 13px; display: block; margin-bottom: 6px; color: var(--text-muted);">Classe</label>
+                        <div style="margin-bottom: 14px;">
+                            <label style="font-size: 12px; display: block; margin-bottom: 5px; color: var(--text-muted);">Classe</label>
                             <select name="classe_cible" required>
                                 {% for c in classes %}
                                     <option value="{{ c }}">{{ c }}</option>
                                 {% endfor %}
                             </select>
                         </div>
-                        <div style="margin-bottom: 15px;">
-                            <label style="font-size: 13px; display: block; margin-bottom: 6px; color: var(--text-muted);">Nom complet</label>
+                        <div style="margin-bottom: 14px;">
+                            <label style="font-size: 12px; display: block; margin-bottom: 5px; color: var(--text-muted);">Nom complet</label>
                             <input type="text" name="nouveau_nom" placeholder="Prénom et Nom" required autocomplete="off">
                         </div>
-                        <div style="margin-bottom: 20px;">
-                            <label style="font-size: 12px; display: block; margin-bottom: 6px; color: var(--text-muted);">Code secret (optionnel)</label>
+                        <div style="margin-bottom: 18px;">
+                            <label style="font-size: 11px; display: block; margin-bottom: 5px; color: var(--text-muted);">Code secret (optionnel)</label>
                             <input type="text" name="code_secret_saisi" placeholder="Laisser vide pour auto">
                         </div>
                         <button type="submit" class="btn-main" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">Inscrire</button>
@@ -726,7 +626,7 @@
 
                 <div class="card">
                     <h3>Annuaire & Codes Secrets ({{ tous_eleves|length }})</h3>
-                    <div style="max-height: 400px; overflow-y: auto;">
+                    <div style="max-height: 380px; overflow-y: auto;">
                         <table>
                             <thead>
                                 <tr>
@@ -765,20 +665,20 @@
                     <p>Suivez les performances académiques de votre enfant en toute simplicité grâce à son code secret.</p>
                 </div>
                 <div class="login-right-side">
-                    <div class="login-card" style="max-width: 440px;">
-                        <h2 style="margin-bottom: 20px; font-size: 22px;">Code Secret</h2>
+                    <div class="login-card" style="max-width: 420px;">
+                        <h2 style="margin-bottom: 18px; font-size: 20px;">Code Secret</h2>
                         
                         {% if message %}<div class="error">{{ message }}</div>{% endif %}
 
                         <form method="POST" action="/?view=parent_space">
                             <input type="hidden" name="action" value="search_by_code">
-                            <input type="text" name="code_secret" placeholder="Ex: A482" required autocomplete="off" style="text-transform: uppercase; font-weight: bold; text-align: center; letter-spacing: 2px; font-size: 18px;">
+                            <input type="text" name="code_secret" placeholder="Ex: A482" required autocomplete="off" style="text-transform: uppercase; font-weight: bold; text-align: center; letter-spacing: 2px; font-size: 16px;">
                             <button type="submit" class="btn-main">Consulter</button>
                         </form>
 
                         {% if recherche_effectuee %}
-                            <div style="margin-top: 20px; text-align: left; max-height: 240px; overflow-y: auto;">
-                                <p style="font-size: 14px; margin-bottom: 12px; font-weight: 600; text-align: center; color: var(--accent-primary);">Élève : {{ eleve_trouve }}</p>
+                            <div style="margin-top: 18px; text-align: left; max-height: 220px; overflow-y: auto;">
+                                <p style="font-size: 13px; margin-bottom: 10px; font-weight: 600; text-align: center; color: var(--accent-primary);">Élève : {{ eleve_trouve }}</p>
                                 {% if resultats %}
                                     <table>
                                         <thead>
@@ -801,7 +701,7 @@
                                         </tbody>
                                     </table>
                                 {% else %}
-                                    <p style="font-size: 13px; opacity: 0.7; text-align: center; margin-top: 10px;">Aucune note enregistrée.</p>
+                                    <p style="font-size: 12px; opacity: 0.7; text-align: center; margin-top: 10px;">Aucune note enregistrée.</p>
                                 {% endif %}
                             </div>
                         {% endif %}
@@ -823,7 +723,7 @@
                 </div>
                 <div class="login-right-side">
                     <div class="login-card">
-                        <h2 style="margin-bottom: 24px; font-size: 22px;">Connexion Enseignant</h2>
+                        <h2 style="margin-bottom: 20px; font-size: 20px;">Connexion Enseignant</h2>
                         {% if message %}<div class="error">{{ message }}</div>{% endif %}
                         <form method="POST" action="/">
                             <input type="hidden" name="action" value="login">
@@ -833,7 +733,7 @@
                         </form>
                         <div class="fb-divider"></div>
                         <a href="/?view=register" class="btn-alt">Créer un compte</a>
-                        <div style="margin-top: 12px; display: flex; justify-content: space-between; font-size: 13px;">
+                        <div style="margin-top: 10px; display: flex; justify-content: space-between; font-size: 12px;">
                             <a href="/?view=parent_space" class="switch-link" style="margin-top:0;">👨‍👩‍👧 Espace Parents</a>
                             <a href="/?view=admin_login" class="switch-link" style="color: #94a3b8; margin-top:0;">🛡️ Admin</a>
                         </div>
@@ -844,4 +744,4 @@
     {% endif %}
 
 </body>
-</html>
+</html> 

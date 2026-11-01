@@ -64,12 +64,10 @@ def init_db():
                     message TEXT NOT NULL,
                     date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
 
-    # Table de configuration pour stocker le code secret administrateur
     conn.execute('''CREATE TABLE IF NOT EXISTS config (
                     cle TEXT PRIMARY KEY,
                     valeur TEXT NOT NULL)''')
     
-    # Code secret admin par défaut s'il n'existe pas
     code_admin_existe = conn.execute('SELECT * FROM config WHERE cle = ?', ('admin_code',)).fetchone()
     if not code_admin_existe:
         conn.execute('INSERT INTO config (cle, valeur) VALUES (?, ?)', ('admin_code', 'admin123'))
@@ -101,7 +99,7 @@ init_db()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    # 1. ESPACE ADMINISTRATION (Si connecté comme Admin)
+    # 1. ESPACE ADMINISTRATION
     if session.get('is_admin'):
         view = request.args.get('view', 'admin_space')
         message = ''
@@ -155,6 +153,8 @@ def index():
         success_message = ''
         
         conn = get_db_connection()
+        prof_info = conn.execute('SELECT * FROM profs WHERE id = ?', (session['prof_id'],)).fetchone()
+        
         matiere_selectionnee = request.args.get('matiere', MATIERES_OFFICIELLES[0])
         classe_selectionnee = request.args.get('classe', 'Terminale IMI 1')
         semestre_selectionne = request.args.get('semestre', SEMESTRES_OFFICIELS[0])
@@ -162,21 +162,40 @@ def index():
         if request.method == 'POST':
             action_prof = request.form.get('action_prof')
             
-            if action_prof == 'add_note':
-                eleve = request.form.get('eleve')
-                classe = request.form.get('classe')
-                matiere = request.form.get('matiere')
-                semestre = request.form.get('semestre')
-                type_eval = request.form.get('type_eval')
-                note = request.form.get('note')
+            if action_prof == 'save_all_notes':
+                types_eval = ["Interrogation 1", "Interrogation 2", "Interrogation 3", "Devoir 1", "Devoir 2"]
+                liste_eleves = conn.execute('SELECT nom FROM eleves WHERE classe = ?', (classe_selectionnee,)).fetchall()
                 
-                if eleve and classe and matiere and semestre and type_eval and note:
-                    conn.execute('INSERT INTO notes (nom_eleve, classe, matiere, semestre, type_eval, note) VALUES (?, ?, ?, ?, ?, ?)',
-                                 (eleve, classe, matiere, semestre, type_eval, note))
-                    conn.commit()
-                    matiere_selectionnee = matiere
-                    classe_selectionnee = classe
-                    semestre_selectionne = semestre
+                for e in liste_eleves:
+                    nom_eleve = e['nom']
+                    for t_eval in types_eval:
+                        field_name = f"note_{nom_eleve}_{t_eval.replace(' ', '-')}"
+                        valeur_saisie = request.form.get(field_name, '').strip()
+                        
+                        existante = conn.execute(
+                            'SELECT id FROM notes WHERE nom_eleve = ? AND classe = ? AND matiere = ? AND semestre = ? AND type_eval = ?',
+                            (nom_eleve, classe_selectionnee, matiere_selectionnee, semestre_selectionne, t_eval)
+                        ).fetchone()
+                        
+                        if valeur_saisie != '':
+                            try:
+                                note_val = float(valeur_saisie)
+                                if 0 <= note_val <= 20:
+                                    if existante:
+                                        conn.execute('UPDATE notes SET note = ? WHERE id = ?', (note_val, existante['id']))
+                                    else:
+                                        conn.execute(
+                                            'INSERT INTO notes (nom_eleve, classe, matiere, semestre, type_eval, note) VALUES (?, ?, ?, ?, ?, ?)',
+                                            (nom_eleve, classe_selectionnee, matiere_selectionnee, semestre_selectionne, t_eval, note_val)
+                                        )
+                            except ValueError:
+                                pass
+                        else:
+                            if existante:
+                                conn.execute('DELETE FROM notes WHERE id = ?', (existante['id'],))
+                                
+                conn.commit()
+                success_message = "Notes mises à jour avec succès !"
 
             elif action_prof == 'update_profile':
                 nouveau_nom = request.form.get('nom', '').strip()
@@ -190,9 +209,8 @@ def index():
             elif action_prof == 'update_password':
                 ancien_mdp = request.form.get('ancien_password', '')
                 nouveau_mdp = request.form.get('nouveau_password', '')
-                prof = conn.execute('SELECT * FROM profs WHERE id = ?', (session['prof_id'],)).fetchone()
                 
-                if prof and check_password_hash(prof['mot_de_passe'], ancien_mdp):
+                if prof_info and check_password_hash(prof_info['mot_de_passe'], ancien_mdp):
                     hashed_mdp = generate_password_hash(nouveau_mdp)
                     conn.execute('UPDATE profs SET mot_de_passe = ? WHERE id = ?', (hashed_mdp, session['prof_id']))
                     conn.commit()
@@ -222,11 +240,11 @@ def index():
             notes_eleve = [n for n in notes if n['nom_eleve'] == e['nom']]
             notes_dict = {n['type_eval']: n['note'] for n in notes_eleve}
             
-            i1 = notes_dict.get('Interrogation 1', '-')
-            i2 = notes_dict.get('Interrogation 2', '-')
-            i3 = notes_dict.get('Interrogation 3', '-')
-            d1 = notes_dict.get('Devoir 1', '-')
-            d2 = notes_dict.get('Devoir 2', '-')
+            i1 = notes_dict.get('Interrogation 1', '')
+            i2 = notes_dict.get('Interrogation 2', '')
+            i3 = notes_dict.get('Interrogation 3', '')
+            d1 = notes_dict.get('Devoir 1', '')
+            d2 = notes_dict.get('Devoir 2', '')
             
             n_interro = [n['note'] for n in notes_eleve if 'Interrogation' in n['type_eval']]
             n_devoir = [n['note'] for n in notes_eleve if 'Devoir' in n['type_eval']]
@@ -234,14 +252,9 @@ def index():
             m_interro = sum(n_interro) / len(n_interro) if n_interro else None
             m_devoir = sum(n_devoir) / len(n_devoir) if n_devoir else None
             
-            if m_interro is not None and m_devoir is not None:
-                m_gen = (m_interro + (m_devoir * 2)) / 3
-            elif m_devoir is not None:
-                m_gen = m_devoir
-            elif m_interro is not None:
-                m_gen = m_interro
-            else:
-                m_gen = None
+            # Calcul de la moyenne générale simple (moyenne interro + moyenne devoir / 2)
+            toutes_notes = [n['note'] for n in notes_eleve]
+            m_gen = sum(toutes_notes) / len(toutes_notes) if toutes_notes else None
                 
             bilan_eleves.append({
                 'nom': e['nom'],
@@ -253,7 +266,6 @@ def index():
             })
             
         notifications = conn.execute('SELECT * FROM notifications ORDER BY id DESC LIMIT 10').fetchall()
-        prof_info = conn.execute('SELECT * FROM profs WHERE id = ?', (session['prof_id'],)).fetchone()
         conn.close()
         
         return render_template('index.html', view=view, prof_nom=session['prof_nom'], prof_info=prof_info,
@@ -359,16 +371,6 @@ def index():
                            matieres=MATIERES_OFFICIELLES, classes=CLASSES_OFFICIELLES, semestres=SEMESTRES_OFFICIELS,
                            resultats=resultats_recherche, recherche_effectuee=recherche_effectuee,
                            eleve_trouve=eleve_trouve)
-
-@app.route('/delete/<int:id>')
-def delete_note(id):
-    if 'prof_id' not in session:
-        return redirect(url_for('index'))
-    conn = get_db_connection()
-    conn.execute('DELETE FROM notes WHERE id = ?', (id,))
-    conn.commit()
-    conn.close()
-    return redirect(url_for('index'))
 
 @app.route('/admin_delete_eleve/<int:id>')
 def admin_delete_eleve(id):
