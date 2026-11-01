@@ -264,6 +264,28 @@
             font-size: 13px;
         }
 
+        /* BOUTON VERT POUR SCANNER */
+        .btn-scan {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-scan:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(16, 185, 129, 0.4);
+        }
+
         .selectors-bar {
             background: var(--glass-card);
             backdrop-filter: blur(16px);
@@ -385,11 +407,6 @@
             vertical-align: middle;
             white-space: nowrap;
         }
-
-        .btn-export {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-block;
-        }
     </style>
     <script>
         function updateView() {
@@ -403,6 +420,12 @@
             document.body.classList.toggle('light-theme');
             const isLight = document.body.classList.contains('light-theme');
             localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        }
+
+        function declencherScanner(input) {
+            if (input.files && input.files[0]) {
+                alert("Photo du cahier enregistrée ! Analyse de la page en cours...");
+            }
         }
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -420,8 +443,13 @@
         <div class="dashboard-wrapper" style="align-self: flex-start;">
             <div class="header">
                 <h2>Class Master IMI <span style="font-weight: 400; opacity: 0.7; font-size: 15px;">| Prof. {{ prof_nom }}</span></h2>
-                <div>
-                    <a href="/export_csv" class="btn-export">📥 Exporter</a>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <!-- BOUTON VERT SCANNER -->
+                    <label class="btn-scan">
+                        📸 Scanner
+                        <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="declencherScanner(this)">
+                    </label>
+
                     <a href="/?view=settings" class="settings-btn">⚙️ Paramètres</a>
                     <a href="/logout" class="logout-btn">Déconnexion</a>
                 </div>
@@ -525,6 +553,29 @@
 
                     <div style="margin-top: 20px; text-align: right;">
                         <button type="submit" class="btn-main" style="max-width: 250px; margin-bottom: 0;">💾 Enregistrer toutes les notes</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ESPACE DE DISCUSSION COMMUN / CHAT POUR PROFESSEUR -->
+            <div class="card" style="margin-top: 20px;">
+                <h3>💬 Espace de Discussion (Professeurs & Administration)</h3>
+                <div style="max-height: 220px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 10px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px;">
+                    {% for msg in messages_recents %}
+                        <div style="background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 8px; font-size: 13px;">
+                            <strong style="color: var(--accent-primary);">{{ msg.auteur }} :</strong> 
+                            <span>{{ msg.contenu }}</span>
+                            <span style="font-size: 10px; opacity: 0.5; float: right;">{{ msg.date_envoi }}</span>
+                        </div>
+                    {% else %}
+                        <p style="font-size: 12px; opacity: 0.5; text-align: center;">Aucun message dans le fil de discussion.</p>
+                    {% endfor %}
+                </div>
+                <form method="POST">
+                    <input type="hidden" name="action_prof" value="envoyer_message_prof">
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" name="contenu_msg" placeholder="Écrire un message..." required style="margin-bottom: 0; flex-grow: 1;">
+                        <button type="submit" class="btn-main" style="width: auto; padding: 0 20px; margin-bottom: 0;">Envoyer</button>
                     </div>
                 </form>
             </div>
@@ -725,31 +776,56 @@
                     </div>
                 </div>
             </div>
+
+            <!-- CHAT / DISCUSSION POUR L'ADMINISTRATION -->
+            <div class="card" style="margin-top: 20px;">
+                <h3>💬 Espace de Discussion (Supervision Admin)</h3>
+                <div style="max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 10px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px;">
+                    {% for msg in messages_recents %}
+                        <div style="background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 8px; font-size: 13px;">
+                            <strong style="color: var(--accent-primary);">{{ msg.auteur }} :</strong> 
+                            <span>{{ msg.contenu }}</span>
+                            <span style="font-size: 10px; opacity: 0.5; float: right;">{{ msg.date_envoi }}</span>
+                        </div>
+                    {% else %}
+                        <p style="font-size: 12px; opacity: 0.5; text-align: center;">Aucun message récent.</p>
+                    {% endfor %}
+                </div>
+                <form method="POST" action="/?view=admin_space">
+                    <input type="hidden" name="action" value="envoyer_message_admin">
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" name="contenu_msg" placeholder="Répondre en tant qu'administrateur..." required style="margin-bottom: 0; flex-grow: 1;">
+                        <button type="submit" class="btn-main" style="width: auto; padding: 0 20px; margin-bottom: 0;">Envoyer</button>
+                    </div>
+                </form>
+            </div>
         </div>
 
     {% elif view == 'parent_space' %}
-        <!-- ================= ESPACE PARENTS ================= -->
+        <!-- ================= ESPACE PARENTS (CHAT CONDITIONNEL) ================= -->
         <div class="login-page-container">
             <div class="login-content-wrapper">
                 <div class="login-left-side">
                     <h1>Espace Consultation</h1>
-                    <p>Suivez les performances académiques de votre enfant en toute simplicité grâce à son code secret.</p>
+                    <p>Suivez les performances académiques de votre enfant et échangez directement avec l'équipe pédagogique grâce à votre code secret.</p>
                 </div>
                 <div class="login-right-side">
-                    <div class="login-card" style="max-width: 420px;">
-                        <h2 style="margin-bottom: 18px; font-size: 20px;">Code Secret</h2>
+                    <div class="login-card" style="max-width: 450px; text-align: left;">
+                        <h2 style="margin-bottom: 18px; font-size: 20px; text-align: center;">Code Secret & Chat</h2>
                         
                         {% if message %}<div class="error">{{ message }}</div>{% endif %}
 
+                        <!-- Étape 1 : Le formulaire de code secret -->
                         <form method="POST" action="/?view=parent_space">
                             <input type="hidden" name="action" value="search_by_code">
-                            <input type="text" name="code_secret" placeholder="Ex: A482" required autocomplete="off" style="text-transform: uppercase; font-weight: bold; text-align: center; letter-spacing: 2px; font-size: 16px;">
-                            <button type="submit" class="btn-main">Consulter</button>
+                            <input type="text" name="code_secret" placeholder="Ex: A482" required autocomplete="off" style="text-transform: uppercase; font-weight: bold; text-align: center; letter-spacing: 2px; font-size: 16px;" value="{{ request.form.get('code_secret', '') }}">
+                            <button type="submit" class="btn-main">Valider le code secret</button>
                         </form>
 
-                        {% if recherche_effectuee %}
-                            <div style="margin-top: 18px; text-align: left; max-height: 220px; overflow-y: auto;">
-                                <p style="font-size: 13px; margin-bottom: 10px; font-weight: 600; text-align: center; color: var(--accent-primary);">Élève : {{ eleve_trouve }}</p>
+                        <!-- Étape 2 : Si le code est correct, on affiche les notes ET le chat -->
+                        {% if recherche_effectuee and resultats is not none %}
+                            <div style="margin-top: 15px; max-height: 160px; overflow-y: auto; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px;">
+                                <p style="font-size: 13px; margin-bottom: 8px; font-weight: 600; text-align: center; color: var(--accent-primary);">Élève : {{ eleve_trouve }}</p>
                                 {% if resultats %}
                                     <table>
                                         <thead>
@@ -772,13 +848,39 @@
                                         </tbody>
                                     </table>
                                 {% else %}
-                                    <p style="font-size: 12px; opacity: 0.7; text-align: center; margin-top: 10px;">Aucune note enregistrée.</p>
+                                    <p style="font-size: 12px; opacity: 0.7; text-align: center;">Aucune note enregistrée.</p>
                                 {% endif %}
+                            </div>
+
+                            <!-- LE CHAT S'ACTIVE UNIQUEMENT ICI -->
+                            <div style="margin-top: 18px; border-top: 1px solid var(--glass-border); padding-top: 14px;">
+                                <h4 style="font-size: 13px; margin-bottom: 8px; color: var(--accent-primary);">💬 Discussion avec l'équipe pédagogique</h4>
+                                
+                                <div style="max-height: 140px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 6px;">
+                                    {% for msg in messages_recents %}
+                                        <div style="background: rgba(255,255,255,0.05); padding: 6px 8px; border-radius: 6px; font-size: 11px;">
+                                            <strong style="color: var(--accent-primary);">{{ msg.auteur }} :</strong> 
+                                            <span>{{ msg.contenu }}</span>
+                                            <span style="font-size: 9px; opacity: 0.5; float: right;">{{ msg.date_envoi }}</span>
+                                        </div>
+                                    {% else %}
+                                        <p style="font-size: 11px; opacity: 0.5; text-align: center;">Aucun message pour le moment.</p>
+                                    {% endfor %}
+                                </div>
+
+                                <form method="POST" action="/?view=parent_space">
+                                    <input type="hidden" name="action" value="envoyer_message_parent">
+                                    <input type="hidden" name="code_secret" value="{{ request.form.get('code_secret', '') }}">
+                                    <div style="display: flex; gap: 6px;">
+                                        <input type="text" name="contenu_msg" placeholder="Écrire un message..." required style="margin-bottom: 0; font-size: 13px; padding: 8px;">
+                                        <button type="submit" class="btn-main" style="width: auto; padding: 0 14px; margin-bottom: 0; font-size: 13px;">Envoyer</button>
+                                    </div>
+                                </form>
                             </div>
                         {% endif %}
 
                         <div class="fb-divider"></div>
-                        <a href="/?view=login" class="switch-link">Retour à la connexion Enseignant</a>
+                        <a href="/?view=login" class="switch-link" style="text-align: center;">Retour à la connexion Enseignant</a>
                     </div>
                 </div>
             </div>

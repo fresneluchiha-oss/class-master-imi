@@ -64,6 +64,13 @@ def init_db():
                     message TEXT NOT NULL,
                     date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
 
+    conn.execute('''CREATE TABLE IF NOT EXISTS messages (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    auteur TEXT NOT NULL,
+                    role TEXT NOT NULL,
+                    contenu TEXT NOT NULL,
+                    date_envoi TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+
     conn.execute('''CREATE TABLE IF NOT EXISTS config (
                     cle TEXT PRIMARY KEY,
                     valeur TEXT NOT NULL)''')
@@ -137,11 +144,20 @@ def index():
                 else:
                     message = "L'ancien code administrateur est incorrect."
                 view = 'admin_settings'
+                
+            elif action == 'envoyer_message_admin':
+                contenu_msg = request.form.get('contenu_msg', '').strip()
+                if contenu_msg:
+                    conn.execute('INSERT INTO messages (auteur, role, contenu) VALUES (?, ?, ?)', 
+                                 ("Administrateur", "admin", contenu_msg))
+                    conn.commit()
 
         tous_eleves = conn.execute('SELECT * FROM eleves ORDER BY classe ASC, nom ASC').fetchall()
+        messages_recents = conn.execute('SELECT * FROM messages ORDER BY id DESC LIMIT 15').fetchall()
         conn.close()
         return render_template('index.html', view=view, tous_eleves=tous_eleves, 
-                               classes=CLASSES_OFFICIELLES, message=message, success_message_admin=success_message_admin)
+                               classes=CLASSES_OFFICIELLES, message=message, success_message_admin=success_message_admin,
+                               messages_recents=messages_recents)
 
     if 'prof_id' in session:
         view = request.args.get('view', 'dashboard')
@@ -224,6 +240,14 @@ def index():
                 
                 session.clear()
                 return redirect(url_for('index'))
+                
+            elif action_prof == 'envoyer_message_prof':
+                contenu_msg = request.form.get('contenu_msg', '').strip()
+                nom_prof = session.get('prof_nom', 'Enseignant')
+                if contenu_msg:
+                    conn.execute('INSERT INTO messages (auteur, role, contenu) VALUES (?, ?, ?)', 
+                                 (f"Prof. {nom_prof}", "prof", contenu_msg))
+                    conn.commit()
 
         notes = conn.execute('SELECT * FROM notes WHERE matiere = ? AND classe = ? AND semestre = ?', 
                              (matiere_selectionnee, classe_selectionnee, semestre_selectionne)).fetchall()
@@ -259,19 +283,22 @@ def index():
             })
             
         notifications = conn.execute('SELECT * FROM notifications ORDER BY id DESC LIMIT 5').fetchall()
+        messages_recents = conn.execute('SELECT * FROM messages ORDER BY id DESC LIMIT 15').fetchall()
         conn.close()
         
         return render_template('index.html', view=view, prof_nom=session['prof_nom'], prof_info=prof_info,
                                matieres=MATIERES_OFFICIELLES, classes=CLASSES_OFFICIELLES, semestres=SEMESTRES_OFFICIELS,
                                matiere_active=matiere_selectionnee, classe_active=classe_selectionnee, semestre_actif=semestre_selectionne,
                                bilan_eleves=bilan_eleves, liste_eleves=liste_eleves,
-                               notifications=notifications, message=message, success_message=success_message)
+                               notifications=notifications, messages_recents=messages_recents, 
+                               message=message, success_message=success_message)
 
     view = request.args.get('view', 'login')
     message = ''
     resultats_recherche = None
     recherche_effectuee = False
     eleve_trouve = ""
+    messages_recents = []
 
     if request.method == 'POST':
         action = request.form.get('action')
@@ -352,15 +379,38 @@ def index():
                     'SELECT semestre, matiere, type_eval, note FROM notes WHERE LOWER(nom_eleve) = LOWER(?) AND classe = ?',
                     (eleve['nom'], eleve['classe'])
                 ).fetchall()
+                messages_recents = conn.execute('SELECT * FROM messages ORDER BY id DESC LIMIT 15').fetchall()
             else:
                 message = "Code secret incorrect."
                 resultats_recherche = []
             conn.close()
 
+        elif action == 'envoyer_message_parent':
+            view = 'parent_space'
+            code_secret_saisi = request.form.get('code_secret', '').strip().upper()
+            contenu_msg = request.form.get('contenu_msg', '').strip()
+            conn = get_db_connection()
+            eleve = conn.execute('SELECT * FROM eleves WHERE UPPER(code_secret) = ?', (code_secret_saisi,)).fetchone()
+            
+            if eleve and contenu_msg:
+                eleve_trouve = f"{eleve['nom']} ({eleve['classe']})"
+                conn.execute('INSERT INTO messages (auteur, role, contenu) VALUES (?, ?, ?)', 
+                             (f"Parent ({eleve['nom']})", "parent", contenu_msg))
+                conn.commit()
+                resultats_recherche = conn.execute(
+                    'SELECT semestre, matiere, type_eval, note FROM notes WHERE LOWER(nom_eleve) = LOWER(?) AND classe = ?',
+                    (eleve['nom'], eleve['classe'])
+                ).fetchall()
+                messages_recents = conn.execute('SELECT * FROM messages ORDER BY id DESC LIMIT 15').fetchall()
+                recherche_effectuee = True
+            else:
+                message = "Erreur lors de l'envoi du message."
+            conn.close()
+
     return render_template('index.html', view=view, message=message, 
                            matieres=MATIERES_OFFICIELLES, classes=CLASSES_OFFICIELLES, semestres=SEMESTRES_OFFICIELS,
                            resultats=resultats_recherche, recherche_effectuee=recherche_effectuee,
-                           eleve_trouve=eleve_trouve)
+                           eleve_trouve=eleve_trouve, messages_recents=messages_recents)
 
 @app.route('/admin_delete_eleve/<int:id>')
 def admin_delete_eleve(id):
@@ -371,22 +421,6 @@ def admin_delete_eleve(id):
     conn.commit()
     conn.close()
     return redirect(url_for('index', view='admin_space'))
-
-@app.route('/export_csv')
-def export_csv():
-    if 'prof_id' not in session:
-        return redirect(url_for('index'))
-    conn = get_db_connection()
-    notes = conn.execute('SELECT nom_eleve, classe, matiere, semestre, type_eval, note FROM notes ORDER BY classe, semestre, nom_eleve').fetchall()
-    conn.close()
-    
-    def generate():
-        yield "Eleve,Classe,Matiere,Semestre,Evaluation,Note\n"
-        for n in notes:
-            yield f"{n['nom_eleve']},{n['classe']},{n['matiere']},{n['semestre']},{n['type_eval']},{n['note']}\n"
-
-    return Response(generate(), mimetype='text/csv', 
-                    headers={"Content-Disposition": "attachment; filename=notes_class_master_imi.csv"})
 
 @app.route('/logout')
 def logout():
