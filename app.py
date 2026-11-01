@@ -4,9 +4,15 @@ import sqlite3
 import random
 import string
 import os
+from openai import OpenAI
 
+# 1. L'application Flask et sa clé secrète pour les sessions
 app = Flask(__name__)
-app.secret_key = 'cle_secrete_class_master_imi'
+app.secret_key = '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"'
+
+# 2. Le client OpenAI avec ta clé API
+client = OpenAI(api_key="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")
+# Le reste de ton code avec @app.route vient après...
 
 MATIERES_OFFICIELLES = [
     "RP (Réparation de poste)",
@@ -36,6 +42,31 @@ def get_db_connection():
     conn = sqlite3.connect('educmaster_mini.db')
     conn.row_factory = sqlite3.Row
     return conn
+
+def reponse_ia_automatique(question_parent, nom_eleve):
+    """Génère une réponse intelligente via l'API OpenAI."""
+    api_key = os.environ.get("OPENAI_API_KEY")
+    
+    # Si la clé n'est pas encore définie, on utilise un repli automatique propre
+    if not api_key:
+        return f"Bonjour ! J'ai bien transmis votre message concernant {nom_eleve} à l'équipe pédagogique. Un professeur vous répondra sous peu."
+    
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": f"Tu es l'assistant virtuel de la plateforme Class Master IMI. Tu réponds de manière très courtoise, concise et rassurante aux parents de l'élève {nom_eleve}. Rappelle-leur si besoin qu'un enseignant ou l'administration reste également à disposition."
+                },
+                {"role": "user", "content": question_parent}
+            ],
+            max_tokens=150
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        print(f"Erreur OpenAI : {e}")
+        return f"Bonjour ! Votre message concernant {nom_eleve} a bien été enregistré. L'équipe pédagogique vous répondra dans les plus brefs délais."
 
 def init_db():
     conn = get_db_connection()
@@ -395,9 +426,18 @@ def index():
             
             if eleve and contenu_msg:
                 eleve_trouve = f"{eleve['nom']} ({eleve['classe']})"
+                
+                # 1. Enregistrement du message du parent
                 conn.execute('INSERT INTO messages (auteur, role, contenu) VALUES (?, ?, ?)', 
                              (f"Parent ({eleve['nom']})", "parent", contenu_msg))
                 conn.commit()
+
+                # 2. Génération et enregistrement automatique de la réponse de l'IA
+                reponse_ia = reponse_ia_automatique(contenu_msg, eleve['nom'])
+                conn.execute('INSERT INTO messages (auteur, role, contenu) VALUES (?, ?, ?)', 
+                             ("🤖 Assistant IA", "bot", reponse_ia))
+                conn.commit()
+
                 resultats_recherche = conn.execute(
                     'SELECT semestre, matiere, type_eval, note FROM notes WHERE LOWER(nom_eleve) = LOWER(?) AND classe = ?',
                     (eleve['nom'], eleve['classe'])

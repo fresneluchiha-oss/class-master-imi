@@ -267,15 +267,15 @@
         .btn-scan {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
-            padding: 8px 16px;
-            border-radius: 8px;
+            padding: 12px 20px;
+            border-radius: 10px;
             border: none;
-            font-size: 13px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             transition: all 0.3s ease;
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
@@ -473,11 +473,6 @@
             <div class="header">
                 <h2>Class Master IMI <span style="font-weight: 400; opacity: 0.7; font-size: 15px;">| Prof. {{ prof_nom }}</span></h2>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <label class="btn-scan">
-                        📸 Scanner
-                        <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="declencherScanner(this)">
-                    </label>
-
                     <a href="/?view=settings" class="settings-btn">⚙️ Paramètres</a>
                     <a href="/logout" class="logout-btn">Déconnexion</a>
                 </div>
@@ -576,7 +571,13 @@
                         </table>
                     </div>
 
-                    <div style="margin-top: 20px; text-align: right;">
+                    <!-- BOUTON SCANNER ET BOUTON ENREGISTRER PLACÉS EN BAS -->
+                    <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <label class="btn-scan" style="margin-bottom: 0;">
+                            📸 Scanner un cahier
+                            <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="declencherScanner(this)">
+                        </label>
+
                         <button type="submit" class="btn-main" style="max-width: 250px; margin-bottom: 0;">💾 Enregistrer toutes les notes</button>
                     </div>
                 </form>
@@ -670,7 +671,6 @@
                 {% if message %}<div class="error">{{ message }}</div>{% endif %}
                 {% if success_message_admin %}<div class="success">{{ success_message_admin }}</div>{% endif %}
 
-                <!-- Option Thème Visuel intégrée dans les Paramètres Admin -->
                 <div style="margin-bottom: 20px; background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <strong style="font-size: 14px;">🎨 Apparence du site</strong>
@@ -841,7 +841,6 @@
                     <div class="login-card" style="max-width: 450px; text-align: left;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
                             <h2 style="font-size: 20px; margin-bottom: 0;">Code Secret & Chat</h2>
-                            <!-- Icône seule pour le thème dans l'Espace Parents -->
                             <button type="button" onclick="toggleTheme()" class="btn-alt" style="width: auto; padding: 6px 10px; margin-bottom: 0; font-size: 14px;" title="Changer le thème">🌓</button>
                         </div>
                         
@@ -946,4 +945,4 @@
     {% endif %}
 
 </body>
-</html> 
+</html>
