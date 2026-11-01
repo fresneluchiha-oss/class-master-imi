@@ -264,7 +264,6 @@
             font-size: 13px;
         }
 
-        /* BOUTON VERT POUR SCANNER */
         .btn-scan {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
@@ -348,7 +347,6 @@
             color: var(--text-main);
         }
 
-        /* STYLES TABLEAU AVEC COLONNE & EN-TÊTE FIGÉS (STICKY) */
         .table-container {
             max-height: 500px;
             overflow: auto;
@@ -475,7 +473,6 @@
             <div class="header">
                 <h2>Class Master IMI <span style="font-weight: 400; opacity: 0.7; font-size: 15px;">| Prof. {{ prof_nom }}</span></h2>
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <!-- BOUTON VERT SCANNER -->
                     <label class="btn-scan">
                         📸 Scanner
                         <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="declencherScanner(this)">
@@ -486,7 +483,6 @@
                 </div>
             </div>
 
-            <!-- FIL D'ACTUALITÉ / NOTIFICATIONS -->
             <div class="card" style="margin-bottom: 20px; padding: 15px 20px;">
                 <h4 style="font-size: 14px; margin-bottom: 8px; color: var(--accent-primary);">🔔 Dernières activités de la plateforme</h4>
                 <ul style="list-style-type: none; font-size: 12px; color: var(--text-muted);">
@@ -530,7 +526,6 @@
             {% if success_message %}<div class="success">{{ success_message }}</div>{% endif %}
             {% if message %}<div class="error">{{ message }}</div>{% endif %}
 
-            <!-- SAISIE DIRECTE DANS LE TABLEAU GLOBAL -->
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
                     <h3 style="margin-bottom: 0; border: none; padding: 0;">Saisie des Notes — {{ matiere_active }} <span style="font-size: 12px; font-weight: 400; color: var(--accent-primary);">({{ semestre_actif }})</span></h3>
@@ -540,7 +535,6 @@
                 <form method="POST">
                     <input type="hidden" name="action_prof" value="save_all_notes">
 
-                    <!-- CONTENEUR DU TABLEAU AVEC COLONNE NOMS & EN-TÊTE FIGÉS -->
                     <div class="table-container">
                         <table style="min-width: 850px;">
                             <thead>
@@ -588,7 +582,6 @@
                 </form>
             </div>
 
-            <!-- ESPACE DE DISCUSSION COMMUN / CHAT POUR PROFESSEUR -->
             <div class="card" style="margin-top: 20px;">
                 <h3>💬 Espace de Discussion (Professeurs & Administration)</h3>
                 <div style="max-height: 220px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 10px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px;">
@@ -624,7 +617,6 @@
                 {% if message %}<div class="error">{{ message }}</div>{% endif %}
                 {% if success_message %}<div class="success">{{ success_message }}</div>{% endif %}
 
-                <!-- Option Thème Visuel -->
                 <div style="margin-bottom: 20px; background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <strong style="font-size: 14px;">🎨 Apparence du site</strong>
@@ -633,7 +625,6 @@
                     <button type="button" onclick="toggleTheme()" class="btn-alt" style="width: auto; margin: 0; padding: 6px 12px; font-size: 12px;">🌓 Changer thème</button>
                 </div>
 
-                <!-- Informations Enseignant -->
                 <form method="POST" action="/?view=settings">
                     <input type="hidden" name="action_prof" value="update_profile">
                     <h4 style="margin-bottom: 10px; font-size: 14px; border-bottom: 1px solid var(--glass-border); padding-bottom: 5px; color: var(--text-muted);">Informations personnelles</h4>
@@ -646,7 +637,6 @@
                     <button type="submit" class="btn-main">Mettre à jour le profil</button>
                 </form>
 
-                <!-- Sécurité -->
                 <form method="POST" action="/?view=settings" style="margin-top: 20px;">
                     <input type="hidden" name="action_prof" value="update_password">
                     <h4 style="margin-bottom: 10px; font-size: 14px; border-bottom: 1px solid var(--glass-border); padding-bottom: 5px; color: var(--text-muted);">Sécurité & Mot de passe</h4>
@@ -659,7 +649,6 @@
                     <button type="submit" class="btn-alt">Changer le mot de passe</button>
                 </form>
 
-                <!-- Zone de Danger -->
                 <form method="POST" action="/?view=settings" style="margin-top: 20px; border-top: 1px solid rgba(239, 68, 68, 0.3); padding-top: 14px;" onsubmit="return confirm('⚠️ Attention : Voulez-vous vraiment supprimer définitivement votre compte enseignant ? Cette action est irréversible.');">
                     <input type="hidden" name="action_prof" value="delete_account">
                     <h4 style="margin-bottom: 6px; font-size: 14px; color: #fca5a5;">🗑️ Zone de danger</h4>
@@ -680,6 +669,15 @@
 
                 {% if message %}<div class="error">{{ message }}</div>{% endif %}
                 {% if success_message_admin %}<div class="success">{{ success_message_admin }}</div>{% endif %}
+
+                <!-- Option Thème Visuel intégrée dans les Paramètres Admin -->
+                <div style="margin-bottom: 20px; background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="font-size: 14px;">🎨 Apparence du site</strong>
+                        <p style="font-size: 11px; color: var(--text-muted);">Basculez entre le Mode Sombre et le Mode Clair</p>
+                    </div>
+                    <button type="button" onclick="toggleTheme()" class="btn-alt" style="width: auto; margin: 0; padding: 6px 12px; font-size: 12px;">🌓 Changer thème</button>
+                </div>
 
                 <form method="POST" action="/?view=admin_settings">
                     <input type="hidden" name="action" value="admin_change_code">
@@ -808,7 +806,6 @@
                 </div>
             </div>
 
-            <!-- CHAT / DISCUSSION POUR L'ADMINISTRATION -->
             <div class="card" style="margin-top: 20px;">
                 <h3>💬 Espace de Discussion (Supervision Admin)</h3>
                 <div style="max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 10px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px;">
@@ -833,7 +830,7 @@
         </div>
 
     {% elif view == 'parent_space' %}
-        <!-- ================= ESPACE PARENTS (CHAT CONDITIONNEL) ================= -->
+        <!-- ================= ESPACE PARENTS ================= -->
         <div class="login-page-container">
             <div class="login-content-wrapper">
                 <div class="login-left-side">
@@ -842,18 +839,20 @@
                 </div>
                 <div class="login-right-side">
                     <div class="login-card" style="max-width: 450px; text-align: left;">
-                        <h2 style="margin-bottom: 18px; font-size: 20px; text-align: center;">Code Secret & Chat</h2>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                            <h2 style="font-size: 20px; margin-bottom: 0;">Code Secret & Chat</h2>
+                            <!-- Icône seule pour le thème dans l'Espace Parents -->
+                            <button type="button" onclick="toggleTheme()" class="btn-alt" style="width: auto; padding: 6px 10px; margin-bottom: 0; font-size: 14px;" title="Changer le thème">🌓</button>
+                        </div>
                         
                         {% if message %}<div class="error">{{ message }}</div>{% endif %}
 
-                        <!-- Étape 1 : Le formulaire de code secret -->
                         <form method="POST" action="/?view=parent_space">
                             <input type="hidden" name="action" value="search_by_code">
                             <input type="text" name="code_secret" placeholder="Ex: A482" required autocomplete="off" style="text-transform: uppercase; font-weight: bold; text-align: center; letter-spacing: 2px; font-size: 16px;" value="{{ request.form.get('code_secret', '') }}">
                             <button type="submit" class="btn-main">Valider le code secret</button>
                         </form>
 
-                        <!-- Étape 2 : Si le code est correct, on affiche les notes ET le chat -->
                         {% if recherche_effectuee and resultats is not none %}
                             <div style="margin-top: 15px; max-height: 160px; overflow-y: auto; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px;">
                                 <p style="font-size: 13px; margin-bottom: 8px; font-weight: 600; text-align: center; color: var(--accent-primary);">Élève : {{ eleve_trouve }}</p>
@@ -883,7 +882,6 @@
                                 {% endif %}
                             </div>
 
-                            <!-- LE CHAT S'ACTIVE UNIQUEMENT ICI -->
                             <div style="margin-top: 18px; border-top: 1px solid var(--glass-border); padding-top: 14px;">
                                 <h4 style="font-size: 13px; margin-bottom: 8px; color: var(--accent-primary);">💬 Discussion avec l'équipe pédagogique</h4>
                                 
@@ -948,4 +946,4 @@
     {% endif %}
 
 </body>
-</html>
+</html> 
