@@ -99,7 +99,6 @@ init_db()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    # 1. ESPACE ADMINISTRATION
     if session.get('is_admin'):
         view = request.args.get('view', 'admin_space')
         message = ''
@@ -108,7 +107,6 @@ def index():
         
         if request.method == 'POST':
             action = request.form.get('action')
-            
             if action == 'admin_add_eleve':
                 nouveau_nom = request.form.get('nouveau_nom', '').strip()
                 classe_cible = request.form.get('classe_cible')
@@ -126,7 +124,6 @@ def index():
             elif action == 'admin_change_code':
                 ancien_code = request.form.get('ancien_admin_code', '').strip()
                 nouveau_code = request.form.get('nouveau_admin_code', '').strip()
-                
                 cfg = conn.execute('SELECT valeur FROM config WHERE cle = ?', ('admin_code',)).fetchone()
                 code_actuel = cfg['valeur'] if cfg else 'admin123'
 
@@ -146,7 +143,6 @@ def index():
         return render_template('index.html', view=view, tous_eleves=tous_eleves, 
                                classes=CLASSES_OFFICIELLES, message=message, success_message_admin=success_message_admin)
 
-    # 2. TABLEAU DE BORD PROFESSEUR
     if 'prof_id' in session:
         view = request.args.get('view', 'dashboard')
         message = ''
@@ -161,7 +157,6 @@ def index():
         
         if request.method == 'POST':
             action_prof = request.form.get('action_prof')
-            
             if action_prof == 'save_all_notes':
                 types_eval = ["Interrogation 1", "Interrogation 2", "Interrogation 3", "Devoir 1", "Devoir 2"]
                 liste_eleves = conn.execute('SELECT nom FROM eleves WHERE classe = ?', (classe_selectionnee,)).fetchall()
@@ -209,7 +204,6 @@ def index():
             elif action_prof == 'update_password':
                 ancien_mdp = request.form.get('ancien_password', '')
                 nouveau_mdp = request.form.get('nouveau_password', '')
-                
                 if prof_info and check_password_hash(prof_info['mot_de_passe'], ancien_mdp):
                     hashed_mdp = generate_password_hash(nouveau_mdp)
                     conn.execute('UPDATE profs SET mot_de_passe = ? WHERE id = ?', (hashed_mdp, session['prof_id']))
@@ -221,8 +215,8 @@ def index():
             elif action_prof == 'delete_account':
                 prof_nom = session.get('prof_nom', 'Un enseignant')
                 prof_id = session.get('prof_id')
-                
                 conn.execute('DELETE FROM profs WHERE id = ?', (prof_id,))
+                
                 msg_notif = f"Le compte du professeur {prof_nom} a été supprimé."
                 conn.execute('INSERT INTO notifications (message) VALUES (?)', (msg_notif,))
                 conn.commit()
@@ -252,7 +246,6 @@ def index():
             m_interro = sum(n_interro) / len(n_interro) if n_interro else None
             m_devoir = sum(n_devoir) / len(n_devoir) if n_devoir else None
             
-            # Calcul de la moyenne générale simple (moyenne interro + moyenne devoir / 2)
             toutes_notes = [n['note'] for n in notes_eleve]
             m_gen = sum(toutes_notes) / len(toutes_notes) if toutes_notes else None
                 
@@ -265,7 +258,7 @@ def index():
                 'moy_gen': round(m_gen, 2) if m_gen is not None else '-'
             })
             
-        notifications = conn.execute('SELECT * FROM notifications ORDER BY id DESC LIMIT 10').fetchall()
+        notifications = conn.execute('SELECT * FROM notifications ORDER BY id DESC LIMIT 5').fetchall()
         conn.close()
         
         return render_template('index.html', view=view, prof_nom=session['prof_nom'], prof_info=prof_info,
@@ -274,7 +267,6 @@ def index():
                                bilan_eleves=bilan_eleves, liste_eleves=liste_eleves,
                                notifications=notifications, message=message, success_message=success_message)
 
-    # 3. ACCÈS PUBLICS / LOGIN
     view = request.args.get('view', 'login')
     message = ''
     resultats_recherche = None
@@ -283,7 +275,6 @@ def index():
 
     if request.method == 'POST':
         action = request.form.get('action')
-        
         if action == 'login':
             email = request.form.get('email', '').strip()
             password = request.form.get('password', '').strip()
@@ -325,7 +316,7 @@ def index():
                 conn.commit()
                 prof_id = cursor.lastrowid
                 
-                msg_notif = f"Le professeur {nom} a créé un compte et s'est connecté."
+                msg_notif = f"Le professeur {nom} a créé un compte."
                 conn.execute('INSERT INTO notifications (message) VALUES (?)', (msg_notif,))
                 conn.commit()
                 conn.close()
@@ -352,7 +343,6 @@ def index():
             view = 'parent_space'
             recherche_effectuee = True
             code_secret_saisi = request.form.get('code_secret', '').strip().upper()
-            
             conn = get_db_connection()
             eleve = conn.execute('SELECT * FROM eleves WHERE UPPER(code_secret) = ?', (code_secret_saisi,)).fetchone()
             
@@ -386,7 +376,6 @@ def admin_delete_eleve(id):
 def export_csv():
     if 'prof_id' not in session:
         return redirect(url_for('index'))
-    
     conn = get_db_connection()
     notes = conn.execute('SELECT nom_eleve, classe, matiere, semestre, type_eval, note FROM notes ORDER BY classe, semestre, nom_eleve').fetchall()
     conn.close()
