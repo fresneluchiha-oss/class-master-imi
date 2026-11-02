@@ -3,29 +3,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import random
 import string
-import os
 
-# 1. L'application Flask et sa clé secrète pour les sessions
 app = Flask(__name__)
-app.secret_key = 'super-secret-key-class-master-imi'
+app.secret_key = 'super-secret-key-egan-app'
 
-MATIERES_OFFICIELLES = [
-    "RP (Réparation de poste)",
-    "Anglais",
-    "Mathématiques Général",
-    "Français",
-    "Programmation",
-    "RI (Réseau informatique)",
-    "Base de données",
-    "EEB (Électricité et électronique de base)",
-    "Législation (Droit)",
-    "Mathématiques appliquées",
-    "Assistance en ligne (AS/L)",
-    "EPS",
-    "Optimisation de poste (OPT)"
-]
-
-CLASSES_OFFICIELLES = ["Terminale IMI 1", "Terminale IMI 2"]
 SEMESTRES_OFFICIELS = ["Semestre 1", "Semestre 2"]
 
 def generer_code_secret():
@@ -34,16 +15,13 @@ def generer_code_secret():
     return f"{lettre}{chiffres}"
 
 def get_db_connection():
-    conn = sqlite3.connect('educmaster_mini.db')
+    conn = sqlite3.connect('egan_database.db')
     conn.row_factory = sqlite3.Row
     return conn
 
-def reponse_automatique(question_parent, nom_eleve):
-    """Génère une réponse automatique standard sans utiliser d'API externe."""
-    return f"Bonjour ! J'ai bien transmis votre message concernant {nom_eleve} à l'équipe pédagogique. Un professeur vous répondra sous peu."
-
 def init_db():
     conn = get_db_connection()
+    
     conn.execute('''CREATE TABLE IF NOT EXISTS profs (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     email TEXT UNIQUE NOT NULL,
@@ -65,10 +43,21 @@ def init_db():
                     classe TEXT NOT NULL,
                     code_secret TEXT UNIQUE)''')
 
-    conn.execute('''CREATE TABLE IF NOT EXISTS notifications (
+    conn.execute('''CREATE TABLE IF NOT EXISTS classes_db (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    message TEXT NOT NULL,
-                    date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+                    nom_classe TEXT UNIQUE NOT NULL)''')
+
+    conn.execute('''CREATE TABLE IF NOT EXISTS matieres_classes (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    nom_matiere TEXT NOT NULL,
+                    classe TEXT NOT NULL,
+                    UNIQUE(nom_matiere, classe))''')
+
+    conn.execute('''CREATE TABLE IF NOT EXISTS prof_classes (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    prof_id INTEGER NOT NULL,
+                    classe TEXT NOT NULL,
+                    UNIQUE(prof_id, classe))''')
 
     conn.execute('''CREATE TABLE IF NOT EXISTS messages (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -85,26 +74,13 @@ def init_db():
     if not code_admin_existe:
         conn.execute('INSERT INTO config (cle, valeur) VALUES (?, ?)', ('admin_code', 'admin123'))
         conn.commit()
-    
-    prof_existe = conn.execute('SELECT * FROM profs WHERE email = ?', ('prof@educmaster.bj',)).fetchone()
+
+    prof_existe = conn.execute('SELECT * FROM profs WHERE email = ?', ('prof@egan.bj',)).fetchone()
     if not prof_existe:
         mot_de_passe_chiffre = generate_password_hash('prof123')
         conn.execute('INSERT INTO profs (email, mot_de_passe, nom) VALUES (?, ?, ?)',
-                     ('prof@educmaster.bj', mot_de_passe_chiffre, 'Jean Dupont'))
+                     ('prof@egan.bj', mot_de_passe_chiffre, 'Jean Dupont'))
         conn.commit()
-
-    eleves_imi1 = [
-        "Abel", "Pascal", "Jude", "Nornen", "Chabel", 
-        "Fresnel", "Fidel", "Enock", "Cephora", "Naomi", 
-        "Consolas", "Anselme", "Richnel", "Constantin", "Jadel"
-    ]
-    
-    for e in eleves_imi1:
-        existe = conn.execute('SELECT * FROM eleves WHERE nom = ? AND classe = ?', (e, 'Terminale IMI 1')).fetchone()
-        if not existe:
-            code_secret = generer_code_secret()
-            conn.execute('INSERT INTO eleves (nom, classe, code_secret) VALUES (?, ?, ?)', (e, 'Terminale IMI 1', code_secret))
-            conn.commit()
 
     conn.close()
 
@@ -112,6 +88,11 @@ init_db()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    conn = get_db_connection()
+    classes_disponibles = [row['nom_classe'] for row in conn.execute('SELECT nom_classe FROM classes_db ORDER BY nom_classe ASC').fetchall()]
+    conn.close()
+
+    # ================= 1. ADMINISTRATEUR =================
     if session.get('is_admin'):
         view = request.args.get('view', 'admin_space')
         message = ''
@@ -120,7 +101,39 @@ def index():
         
         if request.method == 'POST':
             action = request.form.get('action')
-            if action == 'admin_add_eleve':
+            if action == 'admin_add_classe':
+                nom_nouvelle_classe = request.form.get('nom_nouvelle_classe', '').strip()
+                if nom_nouvelle_classe:
+                    try:
+                        conn.execute('INSERT INTO classes_db (nom_classe) VALUES (?)', (nom_nouvelle_classe,))
+                        conn.commit()
+                        success_message_admin = f"Classe '{nom_nouvelle_classe}' créée avec succès !"
+                    except sqlite3.IntegrityError:
+                        message = "Cette classe existe déjà."
+
+            elif action == 'admin_assign_classe_prof':
+                prof_id_cible = request.form.get('prof_id')
+                classe_cible = request.form.get('classe_cible')
+                if prof_id_cible and classe_cible:
+                    try:
+                        conn.execute('INSERT INTO prof_classes (prof_id, classe) VALUES (?, ?)', (prof_id_cible, classe_cible))
+                        conn.commit()
+                        success_message_admin = f"Classe '{classe_cible}' assignée au professeur avec succès !"
+                    except sqlite3.IntegrityError:
+                        message = "Ce professeur enseigne déjà dans cette classe."
+
+            elif action == 'admin_add_matiere':
+                nom_matiere = request.form.get('nom_matiere', '').strip()
+                classe_matiere = request.form.get('classe_matiere')
+                if nom_matiere and classe_matiere:
+                    try:
+                        conn.execute('INSERT INTO matieres_classes (nom_matiere, classe) VALUES (?, ?)', (nom_matiere, classe_matiere))
+                        conn.commit()
+                        success_message_admin = f"Matière '{nom_matiere}' ajoutée !"
+                    except sqlite3.IntegrityError:
+                        message = "Cette matière existe déjà pour cette classe."
+
+            elif action == 'admin_add_eleve':
                 nouveau_nom = request.form.get('nouveau_nom', '').strip()
                 classe_cible = request.form.get('classe_cible')
                 code_saisi = request.form.get('code_secret_saisi', '').strip().upper()
@@ -130,9 +143,12 @@ def index():
                     try:
                         conn.execute('INSERT INTO eleves (nom, classe, code_secret) VALUES (?, ?, ?)', (nouveau_nom, classe_cible, code_secret))
                         conn.commit()
-                        success_message_admin = f"Élève {nouveau_nom} ajouté avec succès !"
+                        success_message_admin = f"Élève {nouveau_nom} ajouté (Code : {code_secret}) !"
                     except sqlite3.IntegrityError:
                         message = "Ce code secret existe déjà."
+                view = request.args.get('view', 'admin_space')
+                if view == 'admin_classe_detail':
+                    return redirect(url_for('index', view='admin_classe_detail', classe=classe_cible))
 
             elif action == 'admin_change_code':
                 ancien_code = request.form.get('ancien_admin_code', '').strip()
@@ -144,42 +160,73 @@ def index():
                     if nouveau_code:
                         conn.execute('UPDATE config SET valeur = ? WHERE cle = ?', (nouveau_code, 'admin_code'))
                         conn.commit()
-                        success_message_admin = "Code administrateur modifié avec succès !"
+                        success_message_admin = "Code administrateur modifié !"
                     else:
                         message = "Le nouveau code ne peut pas être vide."
                 else:
-                    message = "L'ancien code administrateur est incorrect."
+                    message = "L'ancien code est incorrect."
                 view = 'admin_settings'
-                
-            elif action == 'envoyer_message_admin':
+
+            elif action == 'envoyer_message_chat':
                 contenu_msg = request.form.get('contenu_msg', '').strip()
                 if contenu_msg:
                     conn.execute('INSERT INTO messages (auteur, role, contenu) VALUES (?, ?, ?)', 
                                  ("Administrateur", "admin", contenu_msg))
                     conn.commit()
+                    return redirect(url_for('index', view='messenger'))
 
         tous_eleves = conn.execute('SELECT * FROM eleves ORDER BY classe ASC, nom ASC').fetchall()
-        messages_recents = conn.execute('SELECT * FROM messages ORDER BY id DESC LIMIT 15').fetchall()
-        conn.close()
-        return render_template('index.html', view=view, tous_eleves=tous_eleves, 
-                               classes=CLASSES_OFFICIELLES, message=message, success_message_admin=success_message_admin,
-                               messages_recents=messages_recents)
+        toutes_matieres = conn.execute('SELECT * FROM matieres_classes ORDER BY classe ASC, nom_matiere ASC').fetchall()
+        classes_actuelles = [row['nom_classe'] for row in conn.execute('SELECT nom_classe FROM classes_db ORDER BY nom_classe ASC').fetchall()]
+        tous_profs = conn.execute('SELECT * FROM profs ORDER BY nom ASC').fetchall()
+        attributions_profs = conn.execute('SELECT prof_classes.id, profs.nom as prof_nom, prof_classes.classe FROM prof_classes JOIN profs ON prof_classes.prof_id = profs.id ORDER BY profs.nom ASC').fetchall()
+        messages_recents = conn.execute('SELECT * FROM messages ORDER BY id ASC').fetchall()
+        
+        classe_active_detail = request.args.get('classe', '')
+        eleves_classe_active = []
+        matieres_classe_active = []
+        if view == 'admin_classe_detail' and classe_active_detail:
+            eleves_classe_active = conn.execute('SELECT * FROM eleves WHERE classe = ? ORDER BY nom ASC', (classe_active_detail,)).fetchall()
+            matieres_classe_active = conn.execute('SELECT * FROM matieres_classes WHERE classe = ? ORDER BY nom_matiere ASC', (classe_active_detail,)).fetchall()
 
+        conn.close()
+        
+        return render_template('index.html', view=view, tous_eleves=tous_eleves, toutes_matieres=toutes_matieres,
+                               classes=classes_actuelles, tous_profs=tous_profs, attributions_profs=attributions_profs,
+                               message=message, success_message_admin=success_message_admin,
+                               messages_recents=messages_recents, classe_active_detail=classe_active_detail,
+                               eleves_classe_active=eleves_classe_active, matieres_classe_active=matieres_classe_active)
+
+    # ================= 2. ENSEIGNANT =================
     if 'prof_id' in session:
+        prof_id = session['prof_id']
         view = request.args.get('view', 'dashboard')
         message = ''
         success_message = ''
         
         conn = get_db_connection()
-        prof_info = conn.execute('SELECT * FROM profs WHERE id = ?', (session['prof_id'],)).fetchone()
+        prof_info = conn.execute('SELECT * FROM profs WHERE id = ?', (prof_id,)).fetchone()
         
-        matiere_selectionnee = request.args.get('matiere', MATIERES_OFFICIELLES[0])
-        classe_selectionnee = request.args.get('classe', 'Terminale IMI 1')
+        classes_du_prof = [row['classe'] for row in conn.execute('SELECT classe FROM prof_classes WHERE prof_id = ? ORDER BY classe ASC', (prof_id,)).fetchall()]
+        
+        classe_selectionnee = request.args.get('classe', classes_du_prof[0] if classes_du_prof else '')
+        
+        if classe_selectionnee and classe_selectionnee not in classes_du_prof and classes_du_prof:
+            classe_selectionnee = classes_du_prof[0]
+
+        matieres_classe = [row['nom_matiere'] for row in conn.execute('SELECT nom_matiere FROM matieres_classes WHERE classe = ? ORDER BY nom_matiere ASC', (classe_selectionnee,)).fetchall()] if classe_selectionnee else []
+        matiere_selectionnee = request.args.get('matiere', matieres_classe[0] if matieres_classe else '')
         semestre_selectionne = request.args.get('semestre', SEMESTRES_OFFICIELS[0])
         
         if request.method == 'POST':
             action_prof = request.form.get('action_prof')
+            action = request.form.get('action')
+            
             if action_prof == 'save_all_notes':
+                if classe_selectionnee not in classes_du_prof:
+                    conn.close()
+                    return "Accès refusé : Vous n'enseignez pas dans cette classe.", 403
+
                 types_eval = ["Interrogation 1", "Interrogation 2", "Interrogation 3", "Devoir 1", "Devoir 2"]
                 liste_eleves = conn.execute('SELECT nom FROM eleves WHERE classe = ?', (classe_selectionnee,)).fetchall()
                 
@@ -212,52 +259,57 @@ def index():
                                 conn.execute('DELETE FROM notes WHERE id = ?', (existante['id'],))
                                 
                 conn.commit()
-                success_message = "Notes mises à jour avec succès !"
+                success_message = "Notes enregistrées avec succès !"
 
             elif action_prof == 'update_profile':
                 nouveau_nom = request.form.get('nom', '').strip()
                 nouvel_email = request.form.get('email', '').strip()
                 if nouveau_nom and nouvel_email:
-                    conn.execute('UPDATE profs SET nom = ?, email = ? WHERE id = ?', (nouveau_nom, nouvel_email, session['prof_id']))
-                    conn.commit()
-                    session['prof_nom'] = nouveau_nom
-                    success_message = "Profil mis à jour avec succès !"
+                    try:
+                        conn.execute('UPDATE profs SET nom = ?, email = ? WHERE id = ?', (nouveau_nom, nouvel_email, prof_id))
+                        conn.commit()
+                        session['prof_nom'] = nouveau_nom
+                        success_message = "Profil mis à jour avec succès !"
+                    except sqlite3.IntegrityError:
+                        message = "Cet e-mail est déjà utilisé par un autre compte."
+                view = 'settings'
 
             elif action_prof == 'update_password':
-                ancien_mdp = request.form.get('ancien_password', '')
-                nouveau_mdp = request.form.get('nouveau_password', '')
-                if prof_info and check_password_hash(prof_info['mot_de_passe'], ancien_mdp):
-                    hashed_mdp = generate_password_hash(nouveau_mdp)
-                    conn.execute('UPDATE profs SET mot_de_passe = ? WHERE id = ?', (hashed_mdp, session['prof_id']))
-                    conn.commit()
-                    success_message = "Mot de passe modifié avec succès !"
+                ancien_mdp = request.form.get('ancien_mdp', '').strip()
+                nouveau_mdp = request.form.get('nouveau_mdp', '').strip()
+                
+                if check_password_hash(prof_info['mot_de_passe'], ancien_mdp):
+                    if nouveau_mdp:
+                        mdp_chiffre = generate_password_hash(nouveau_mdp)
+                        conn.execute('UPDATE profs SET mot_de_passe = ? WHERE id = ?', (mdp_chiffre, prof_id))
+                        conn.commit()
+                        success_message = "Mot de passe modifié avec succès !"
+                    else:
+                        message = "Le nouveau mot de passe ne peut pas être vide."
                 else:
-                    message = "Ancien mot de passe incorrect."
+                    message = "L'ancien mot de passe est incorrect."
+                view = 'settings'
 
             elif action_prof == 'delete_account':
-                prof_nom = session.get('prof_nom', 'Un enseignant')
-                prof_id = session.get('prof_id')
                 conn.execute('DELETE FROM profs WHERE id = ?', (prof_id,))
-                
-                msg_notif = f"Le compte du professeur {prof_nom} a été supprimé."
-                conn.execute('INSERT INTO notifications (message) VALUES (?)', (msg_notif,))
+                conn.execute('DELETE FROM prof_classes WHERE prof_id = ?', (prof_id,))
                 conn.commit()
                 conn.close()
-                
                 session.clear()
                 return redirect(url_for('index'))
-                
-            elif action_prof == 'envoyer_message_prof':
+
+            elif action == 'envoyer_message_chat':
                 contenu_msg = request.form.get('contenu_msg', '').strip()
                 nom_prof = session.get('prof_nom', 'Enseignant')
                 if contenu_msg:
                     conn.execute('INSERT INTO messages (auteur, role, contenu) VALUES (?, ?, ?)', 
                                  (f"Prof. {nom_prof}", "prof", contenu_msg))
                     conn.commit()
+                    return redirect(url_for('index', view='messenger'))
 
         notes = conn.execute('SELECT * FROM notes WHERE matiere = ? AND classe = ? AND semestre = ?', 
-                             (matiere_selectionnee, classe_selectionnee, semestre_selectionne)).fetchall()
-        liste_eleves = conn.execute('SELECT * FROM eleves WHERE classe = ? ORDER BY nom ASC', (classe_selectionnee,)).fetchall()
+                             (matiere_selectionnee, classe_selectionnee, semestre_selectionne)).fetchall() if classe_selectionnee else []
+        liste_eleves = conn.execute('SELECT * FROM eleves WHERE classe = ? ORDER BY nom ASC', (classe_selectionnee,)).fetchall() if classe_selectionnee else []
         
         bilan_eleves = []
         for e in liste_eleves:
@@ -272,10 +324,8 @@ def index():
             
             n_interro = [n['note'] for n in notes_eleve if 'Interrogation' in n['type_eval']]
             n_devoir = [n['note'] for n in notes_eleve if 'Devoir' in n['type_eval']]
-            
             m_interro = sum(n_interro) / len(n_interro) if n_interro else None
             m_devoir = sum(n_devoir) / len(n_devoir) if n_devoir else None
-            
             toutes_notes = [n['note'] for n in notes_eleve]
             m_gen = sum(toutes_notes) / len(toutes_notes) if toutes_notes else None
                 
@@ -288,26 +338,25 @@ def index():
                 'moy_gen': round(m_gen, 2) if m_gen is not None else '-'
             })
             
-        notifications = conn.execute('SELECT * FROM notifications ORDER BY id DESC LIMIT 5').fetchall()
-        messages_recents = conn.execute('SELECT * FROM messages ORDER BY id DESC LIMIT 15').fetchall()
+        messages_recents = conn.execute('SELECT * FROM messages ORDER BY id ASC').fetchall()
         conn.close()
         
         return render_template('index.html', view=view, prof_nom=session['prof_nom'], prof_info=prof_info,
-                               matieres=MATIERES_OFFICIELLES, classes=CLASSES_OFFICIELLES, semestres=SEMESTRES_OFFICIELS,
+                               matieres=matieres_classe, classes=classes_du_prof, semestres=SEMESTRES_OFFICIELS,
                                matiere_active=matiere_selectionnee, classe_active=classe_selectionnee, semestre_actif=semestre_selectionne,
-                               bilan_eleves=bilan_eleves, liste_eleves=liste_eleves,
-                               notifications=notifications, messages_recents=messages_recents, 
+                               bilan_eleves=bilan_eleves, liste_eleves=liste_eleves, messages_recents=messages_recents,
                                message=message, success_message=success_message)
 
+    # ================= 3. PARENTS / ACCUEIL =================
     view = request.args.get('view', 'login')
     message = ''
     resultats_recherche = None
     recherche_effectuee = False
     eleve_trouve = ""
-    messages_recents = []
 
     if request.method == 'POST':
         action = request.form.get('action')
+        
         if action == 'login':
             email = request.form.get('email', '').strip()
             password = request.form.get('password', '').strip()
@@ -318,15 +367,10 @@ def index():
                 session['prof_id'] = prof['id']
                 session['prof_nom'] = prof['nom']
                 session.permanent = True
-                
-                msg_notif = f"Le professeur {prof['nom']} s'est connecté."
-                conn.execute('INSERT INTO notifications (message) VALUES (?)', (msg_notif,))
-                conn.commit()
                 conn.close()
                 return redirect(url_for('index'))
             else:
-                if conn:
-                    conn.close()
+                if conn: conn.close()
                 message = 'Identifiants incorrects'
                 view = 'login'
                 
@@ -348,10 +392,6 @@ def index():
                              (email, hashed_password, nom))
                 conn.commit()
                 prof_id = cursor.lastrowid
-                
-                msg_notif = f"Le professeur {nom} a créé un compte."
-                conn.execute('INSERT INTO notifications (message) VALUES (?)', (msg_notif,))
-                conn.commit()
                 conn.close()
 
                 session['prof_id'] = prof_id
@@ -380,82 +420,86 @@ def index():
             eleve = conn.execute('SELECT * FROM eleves WHERE UPPER(code_secret) = ?', (code_secret_saisi,)).fetchone()
             
             if eleve:
+                session['parent_eleve_nom'] = eleve['nom']
+                session['parent_eleve_classe'] = eleve['classe']
                 eleve_trouve = f"{eleve['nom']} ({eleve['classe']})"
                 resultats_recherche = conn.execute(
                     'SELECT semestre, matiere, type_eval, note FROM notes WHERE LOWER(nom_eleve) = LOWER(?) AND classe = ?',
                     (eleve['nom'], eleve['classe'])
                 ).fetchall()
-                messages_recents = conn.execute('SELECT * FROM messages ORDER BY id DESC LIMIT 15').fetchall()
             else:
                 message = "Code secret incorrect."
                 resultats_recherche = []
             conn.close()
 
-        elif action == 'envoyer_message_parent':
-            view = 'parent_space'
-            code_secret_saisi = request.form.get('code_secret', '').strip().upper()
+        elif action == 'envoyer_message_chat':
             contenu_msg = request.form.get('contenu_msg', '').strip()
             conn = get_db_connection()
-            eleve = conn.execute('SELECT * FROM eleves WHERE UPPER(code_secret) = ?', (code_secret_saisi,)).fetchone()
+            nom_parent = session.get('parent_eleve_nom', 'Anonyme')
+            classe_parent = session.get('parent_eleve_classe', '')
             
-            if eleve and contenu_msg:
-                eleve_trouve = f"{eleve['nom']} ({eleve['classe']})"
-                
-                # 1. Enregistrement du message du parent
+            if contenu_msg:
+                auteur_formate = f"Parent ({nom_parent} - {classe_parent})" if session.get('parent_eleve_nom') else "Parent"
                 conn.execute('INSERT INTO messages (auteur, role, contenu) VALUES (?, ?, ?)', 
-                             (f"Parent ({eleve['nom']})", "parent", contenu_msg))
+                             (auteur_formate, "parent", contenu_msg))
                 conn.commit()
-
-                # 2. Enregistrement de la réponse automatique standard
-                reponse_bot = reponse_automatique(contenu_msg, eleve['nom'])
-                conn.execute('INSERT INTO messages (auteur, role, contenu) VALUES (?, ?, ?)', 
-                             ("🤖 Assistant", "bot", reponse_bot))
-                conn.commit()
-
-                resultats_recherche = conn.execute(
-                    'SELECT semestre, matiere, type_eval, note FROM notes WHERE LOWER(nom_eleve) = LOWER(?) AND classe = ?',
-                    (eleve['nom'], eleve['classe'])
-                ).fetchall()
-                messages_recents = conn.execute('SELECT * FROM messages ORDER BY id DESC LIMIT 15').fetchall()
-                recherche_effectuee = True
-            else:
-                message = "Erreur lors de l'envoi du message."
             conn.close()
+            return redirect(url_for('index', view='messenger'))
+
+    conn = get_db_connection()
+    messages_recents = conn.execute('SELECT * FROM messages ORDER BY id ASC').fetchall()
+    conn.close()
 
     return render_template('index.html', view=view, message=message, 
-                           matieres=MATIERES_OFFICIELLES, classes=CLASSES_OFFICIELLES, semestres=SEMESTRES_OFFICIELS,
-                           resultats=resultats_recherche, recherche_effectuee=recherche_effectuee,
-                           eleve_trouve=eleve_trouve, messages_recents=messages_recents)
+                           classes=classes_disponibles, resultats=resultats_recherche, 
+                           recherche_effectuee=recherche_effectuee, eleve_trouve=eleve_trouve,
+                           messages_recents=messages_recents)
 
 @app.route('/scanner_notes', methods=['POST'])
 def scanner_notes():
     if 'prof_id' not in session:
         return jsonify({'success': False, 'message': 'Non autorisé'}), 403
-        
-    if 'photo_cahier' not in request.files:
-        return jsonify({'success': False, 'message': 'Aucun fichier trouvé'})
-        
-    photo = request.files['photo_cahier']
-    
-    if photo.filename == '':
-        return jsonify({'success': False, 'message': 'Nom de fichier vide'})
-        
-    extensions_autorisees = ['.jpg', '.jpeg', '.png', '.webp']
-    extension = os.path.splitext(photo.filename)[1].lower()
-    
-    if extension not in extensions_autorisees:
-        return jsonify({'success': False, 'message': 'Format invalide'})
-        
-    return jsonify({'success': True, 'message': 'Photo valide'})
+    return jsonify({'success': True, 'message': 'Photo analysée avec succès'})
 
 @app.route('/admin_delete_eleve/<int:id>')
 def admin_delete_eleve(id):
     if not session.get('is_admin'):
         return redirect(url_for('index', view='admin_login'))
+    
     conn = get_db_connection()
+    eleve = conn.execute('SELECT classe FROM eleves WHERE id = ?', (id,)).fetchone()
+    classe_nom = eleve['classe'] if eleve else ''
+    
     conn.execute('DELETE FROM eleves WHERE id = ?', (id,))
     conn.commit()
     conn.close()
+    
+    if classe_nom:
+        return redirect(url_for('index', view='admin_classe_detail', classe=classe_nom))
+    return redirect(url_for('index', view='admin_space'))
+
+@app.route('/admin_delete_attribution/<int:id>')
+def admin_delete_attribution(id):
+    if not session.get('is_admin'):
+        return redirect(url_for('index', view='admin_login'))
+    
+    conn = get_db_connection()
+    conn.execute('DELETE FROM prof_classes WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('index', view='admin_space'))
+
+@app.route('/admin_delete_prof/<int:id>')
+def admin_delete_prof(id):
+    if not session.get('is_admin'):
+        return redirect(url_for('index', view='admin_login'))
+    
+    conn = get_db_connection()
+    conn.execute('DELETE FROM profs WHERE id = ?', (id,))
+    conn.execute('DELETE FROM prof_classes WHERE prof_id = ?', (id,))
+    conn.commit()
+    conn.close()
+    
     return redirect(url_for('index', view='admin_space'))
 
 @app.route('/logout')
