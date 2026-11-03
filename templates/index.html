@@ -134,7 +134,6 @@
                 padding: 20px;
             }
 
-            /* Forcer les cartes d'administration en colonne unique */
             .dashboard-wrapper div[style*="grid-template-columns"] {
                 display: flex !important;
                 flex-direction: column !important;
@@ -211,7 +210,7 @@
             if (messageCustom) {
                 document.getElementById('modalText').innerText = messageCustom;
             } else {
-                document.getElementById('modalText').innerText = "Voulez-vous retirer l'accès de ce professeur à cette classe ?";
+                document.getElementById('modalText').innerText = "Voulez-vous effectuer cette suppression ?";
             }
             document.getElementById('modalOverlay').classList.add('active');
         }
@@ -239,12 +238,11 @@
             fenetre.print();
         }
 
-        // Fonction de scannage des notes (caméra / fichier)
         function declencherScan() {
             const fileInput = document.createElement('input');
             fileInput.type = 'file';
             fileInput.accept = 'image/*';
-            fileInput.capture = 'environment'; // Ouvre la caméra sur mobile si possible
+            fileInput.capture = 'environment';
             
             fileInput.onchange = e => {
                 const file = e.target.files[0];
@@ -344,7 +342,7 @@
                 </div>
             </div>
 
-            <!-- TABLEAU DES CLASSES CRÉÉES -->
+            <!-- TABLEAU DES CLASSES CRÉÉES ET GESTION DES SUPPRESSIONS DE CLASSES -->
             <div class="card">
                 <h3>📁 Classes Créées & Gestion</h3>
                 <div class="table-container">
@@ -354,7 +352,7 @@
                                 <th>Classe</th>
                                 <th>Matières associées</th>
                                 <th>Nombre d'élèves</th>
-                                <th style="text-align: right; padding-right: 20px;">Action</th>
+                                <th style="text-align: right; padding-right: 20px;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -371,12 +369,42 @@
                                         {% for e in tous_eleves if e.classe == c %}{% set count_eleves.val = count_eleves.val + 1 %}{% endfor %}
                                         {{ count_eleves.val }} élève(s)
                                     </td>
-                                    <td style="text-align: right; padding-right: 20px;">
-                                        <a href="/?view=admin_classe_detail&classe={{ c }}" class="btn-alt" style="width: auto; padding: 6px 16px; margin-bottom: 0; font-size: 12px; background: #0084ff; color: white; border: none; display: inline-block;">📁 Voir la classe</a>
+                                    <td style="text-align: right; padding-right: 20px; display: flex; gap: 8px; justify-content: flex-end; align-items: center;">
+                                        <a href="/?view=admin_classe_detail&classe={{ c }}" class="btn-alt" style="width: auto; padding: 6px 12px; margin-bottom: 0; font-size: 12px; background: #0084ff; color: white; border: none; display: inline-block;">📁 Voir</a>
+                                        <a href="/admin_delete_classe/{{ c }}" style="color: #fca5a5; text-decoration: none; font-size: 12px; padding: 6px 8px; background: rgba(239, 68, 68, 0.15); border-radius: 6px;" onclick="confirmerSuppression(event, this.href, 'Voulez-vous supprimer cette classe ainsi que tous ses élèves et matières associés ?')">Supprimer</a>
                                     </td>
                                 </tr>
                             {% else %}
                                 <tr><td colspan="4" style="text-align: center; opacity: 0.5; padding: 20px;">Aucune classe créée pour le moment.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TABLEAU DE GESTION DES MATIÈRES (AJOUT DE LA SUPPRESSION) -->
+            <div class="card" style="margin-top: 20px;">
+                <h3>📚 Gestion des Matières</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Classe</th>
+                                <th>Matière</th>
+                                <th style="text-align: right; padding-right: 20px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for m in toutes_matieres %}
+                                <tr>
+                                    <td>🏫 {{ m.classe }}</td>
+                                    <td><strong>{{ m.nom_matiere }}</strong></td>
+                                    <td style="text-align: right; padding-right: 20px;">
+                                        <a href="/admin_delete_matiere/{{ m.id }}" style="color: #fca5a5; text-decoration: none; font-size: 12px;" onclick="confirmerSuppression(event, this.href, 'Voulez-vous supprimer cette matière ?')">Supprimer</a>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr><td colspan="3" style="text-align: center; opacity: 0.5; padding: 20px;">Aucune matière enregistrée.</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -596,7 +624,6 @@
                         </table>
                     </div>
                     {% if classes %}
-                    <!-- Boutons Enregistrer et Scanner côte à côte -->
                     <div style="display: flex; gap: 15px; margin-top: 20px; align-items: center; flex-wrap: wrap;">
                         <button type="submit" class="btn-main" style="max-width: 250px; margin-bottom: 0;">💾 Enregistrer les notes</button>
                         <button type="button" onclick="declencherScan()" class="btn-main" style="max-width: 250px; margin-bottom: 0; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">📸 Scanner Notes</button>

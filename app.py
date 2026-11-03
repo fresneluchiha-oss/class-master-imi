@@ -75,12 +75,7 @@ def init_db():
         conn.execute('INSERT INTO config (cle, valeur) VALUES (?, ?)', ('admin_code', 'admin123'))
         conn.commit()
 
-    prof_existe = conn.execute('SELECT * FROM profs WHERE email = ?', ('prof@egan.bj',)).fetchone()
-    if not prof_existe:
-        mot_de_passe_chiffre = generate_password_hash('prof123')
-        conn.execute('INSERT INTO profs (email, mot_de_passe, nom) VALUES (?, ?, ?)',
-                     ('prof@egan.bj', mot_de_passe_chiffre, 'Jean Dupont'))
-        conn.commit()
+    # Le professeur par défaut "Jean Dupont" a été supprimé d'ici.
 
     conn.close()
 
@@ -502,10 +497,34 @@ def admin_delete_prof(id):
     
     return redirect(url_for('index', view='admin_space'))
 
+@app.route('/admin_delete_matiere/<int:id>')
+def admin_delete_matiere(id):
+    if not session.get('is_admin'):
+        return redirect(url_for('index', view='admin_login'))
+    
+    conn = get_db_connection()
+    conn.execute('DELETE FROM matieres_classes WHERE id = ?', (id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('index', view='admin_space'))
+
+@app.route('/admin_delete_classe/<string:nom_classe>')
+def admin_delete_classe(nom_classe):
+    if not session.get('is_admin'):
+        return redirect(url_for('index', view='admin_login'))
+    
+    conn = get_db_connection()
+    conn.execute('DELETE FROM classes_db WHERE nom_classe = ?', (nom_classe,))
+    conn.execute('DELETE FROM matieres_classes WHERE classe = ?', (nom_classe,))
+    conn.execute('DELETE FROM eleves WHERE classe = ?', (nom_classe,))
+    conn.execute('DELETE FROM prof_classes WHERE classe = ?', (nom_classe,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('index', view='admin_space'))
+
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('index'))
-
 if __name__ == '__main__':
     app.run(debug=True)
