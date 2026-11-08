@@ -108,72 +108,19 @@
         .modal-overlay.active .modal-glass-card { transform: translateY(0); }
         .modal-buttons { display: flex; gap: 12px; margin-top: 20px; }
 
-        /* --- Correctifs Responsive Mobile --- */
         @media (max-width: 900px) {
-            body {
-                align-items: flex-start;
-                padding: 10px;
-            }
-
-            .login-content-wrapper {
-                flex-direction: column;
-                gap: 20px;
-            }
-
-            .login-left-side {
-                text-align: center;
-                padding: 0 10px;
-            }
-
-            .login-left-side h1 {
-                font-size: 28px;
-            }
-
-            .login-card {
-                max-width: 100% !important;
-                padding: 20px;
-            }
-
-            .dashboard-wrapper div[style*="grid-template-columns"] {
-                display: flex !important;
-                flex-direction: column !important;
-                gap: 15px !important;
-            }
-
-            .dashboard-wrapper .card {
-                width: 100% !important;
-                margin-bottom: 0 !important;
-            }
-
-            .dashboard-wrapper .card input,
-            .dashboard-wrapper .card select,
-            .dashboard-wrapper .card button {
-                width: 100% !important;
-                max-width: 100% !important;
-            }
-
-            .header {
-                flex-direction: column;
-                align-items: stretch;
-                text-align: center;
-                gap: 10px;
-                padding: 15px;
-            }
-
-            .header > div {
-                justify-content: center;
-                flex-wrap: wrap;
-            }
-
-            .selectors-bar {
-                grid-template-columns: 1fr !important;
-                padding: 15px;
-            }
-
-            table th, table td {
-                padding: 8px 6px;
-                font-size: 12px;
-            }
+            body { align-items: flex-start; padding: 10px; }
+            .login-content-wrapper { flex-direction: column; gap: 20px; }
+            .login-left-side { text-align: center; padding: 0 10px; }
+            .login-left-side h1 { font-size: 28px; }
+            .login-card { max-width: 100% !important; padding: 20px; }
+            .dashboard-wrapper div[style*="grid-template-columns"] { display: flex !important; flex-direction: column !important; gap: 15px !important; }
+            .dashboard-wrapper .card { width: 100% !important; margin-bottom: 0 !important; }
+            .dashboard-wrapper .card input, .dashboard-wrapper .card select, .dashboard-wrapper .card button { width: 100% !important; max-width: 100% !important; }
+            .header { flex-direction: column; align-items: stretch; text-align: center; gap: 10px; padding: 15px; }
+            .header > div { justify-content: center; flex-wrap: wrap; }
+            .selectors-bar { grid-template-columns: 1fr !important; padding: 15px; }
+            table th, table td { padding: 8px 6px; font-size: 12px; }
         }
 
         @media print {
@@ -306,7 +253,6 @@
             {% if message %}<div class="error">{{ message }}</div>{% endif %}
 
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                <!-- 1. Créer Classe -->
                 <div class="card" style="margin-bottom: 0;">
                     <h3>🏫 1. Créer une Classe</h3>
                     <form method="POST" action="/?view=admin_space">
@@ -317,7 +263,6 @@
                     </form>
                 </div>
 
-                <!-- 2. Assigner Classe à un Prof -->
                 <div class="card" style="margin-bottom: 0;">
                     <h3>👥 2. Assigner une Classe à un Prof</h3>
                     <form method="POST" action="/?view=admin_space">
@@ -338,7 +283,6 @@
                     </form>
                 </div>
 
-                <!-- 3. Ajouter Matière -->
                 <div class="card" style="margin-bottom: 0;">
                     <h3>📚 3. Ajouter une Matière</h3>
                     <form method="POST" action="/?view=admin_space">
@@ -356,7 +300,6 @@
                 </div>
             </div>
 
-            <!-- TABLEAU DES CLASSES CRÉÉES ET GESTION DES SUPPRESSIONS DE CLASSES -->
             <div class="card">
                 <h3>📁 Classes Créées & Gestion</h3>
                 <div class="table-container">
@@ -401,7 +344,6 @@
                 </div>
             </div>
 
-            <!-- TABLEAU DE GESTION DES MATIÈRES -->
             <div class="card" style="margin-top: 20px;">
                 <h3>📚 Gestion des Matières</h3>
                 <div class="table-container">
@@ -430,7 +372,6 @@
                 </div>
             </div>
 
-            <!-- TABLEAU DES PROFESSEURS ET LEURS CLASSES AUTORISÉES -->
             <div class="card" style="margin-top: 20px;">
                 <h3>👨‍🏫 Attributions des Classes aux Professeurs</h3>
                 <div class="table-container">
@@ -459,7 +400,6 @@
                 </div>
             </div>
 
-            <!-- TABLEAU DES PROFESSEURS ENREGISTRÉS -->
             <div class="card" style="margin-top: 20px;">
                 <h3>📋 Gestion des Comptes Professeurs</h3>
                 <div class="table-container">
@@ -490,7 +430,7 @@
         </div>
 
     {% elif session.get('is_admin') and view == 'admin_classe_detail' %}
-        <!-- ================= VUE DÉTAILLÉE D'UNE CLASSE (AVEC LISTE DES MATIÈRES ET ÉLÈVES) ================= -->
+        <!-- ================= VUE DÉTAILLÉE D'UNE CLASSE ================= -->
         <div class="dashboard-wrapper" style="align-self: flex-start;">
             <div class="header">
                 <h2>🏫 Classe : <span style="color: var(--accent-primary);">{{ classe_active_detail }}</span></h2>
@@ -503,10 +443,8 @@
             {% if success_message_admin %}<div class="success">{{ success_message_admin }}</div>{% endif %}
             {% if message %}<div class="error">{{ message }}</div>{% endif %}
 
-            <!-- Grille à 3 colonnes ou disposition claire : Inscription élève, Liste des matières, Liste des élèves -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                <!-- 1. Formulaire Inscrire un Élève -->
-                <div class="card" style="margin-bottom: 0;">
+                <div class="card" style="margin-bottom: 0; height: fit-content;">
                     <h3>👤 Inscrire un Élève</h3>
                     <form method="POST" action="/?view=admin_classe_detail&classe={{ classe_active_detail }}">
                         <input type="hidden" name="action" value="admin_add_eleve">
@@ -522,23 +460,21 @@
                     </form>
                 </div>
 
-                <!-- 2. Bloc Visibilité des Matières de la Classe -->
                 <div class="card" style="margin-bottom: 0;">
                     <h3>📚 Matières de la Classe ({{ matieres_classe_active|length }})</h3>
-                    <div style="max-height: 200px; overflow-y: auto; padding: 5px 0;">
+                    <div style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
                         {% for m in matieres_classe_active %}
-                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; margin-bottom: 8px; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); border-radius: 8px;">
-                                <span style="font-weight: 600; color: var(--accent-primary);">📖 {{ m.nom_matiere }}</span>
-                                <a href="/admin_delete_matiere/{{ m.id }}" style="color: #fca5a5; text-decoration: none; font-size: 11px;" onclick="confirmerSuppression(event, this.href, 'Voulez-vous supprimer cette matière de la classe ?')">Supprimer</a>
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); border-radius: 10px;">
+                                <span style="font-weight: 600; color: var(--accent-primary); display: flex; align-items: center; gap: 8px;">📖 {{ m.nom_matiere }}</span>
+                                <a href="/admin_delete_matiere/{{ m.id }}" style="color: #fca5a5; text-decoration: none; font-size: 12px; font-weight: 600;" onclick="confirmerSuppression(event, this.href, 'Voulez-vous supprimer cette matière de la classe ?')">Supprimer</a>
                             </div>
                         {% else %}
-                            <p style="text-align: center; opacity: 0.5; padding: 20px; font-size: 13px;">Aucune matière ajoutée pour cette classe.</p>
+                            <p style="text-align: center; opacity: 0.5; padding: 25px; font-size: 13px;">Aucune matière ajoutée pour cette classe.</p>
                         {% endfor %}
                     </div>
                 </div>
             </div>
 
-            <!-- 3. Liste des Élèves en plein format en dessous -->
             <div class="card" style="margin-bottom: 0;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px;">
                     <h3 style="margin-bottom: 0; border: none; padding: 0;">📋 Liste des Élèves ({{ eleves_classe_active|length }})</h3>
@@ -585,7 +521,6 @@
                 </div>
             </div>
 
-            <!-- Barre de filtres -->
             <div class="selectors-bar">
                 <div>
                     <label style="font-size: 12px; font-weight: 600; color: var(--text-muted);">🏫 Classe :</label>
